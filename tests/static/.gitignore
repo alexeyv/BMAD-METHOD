@@ -1,0 +1,5 @@
+# to use BMAD workflow in this directory without creating chaos and confusion
+# throughout the rest of the project, keep Claude/BMAD work files local
+.claude
+docs
+CLAUDE.md
