@@ -1,0 +1,344 @@
+# ============================================================
+# SECTION 1: METADATA (auto-updated each run)
+# ============================================================
+version: "1.0"
+generated: "2025-12-01T17:55:42Z"
+source_commit: "64c2c8f6"
+bmad_version: "6.0.0-alpha.13"
+
+# ============================================================
+# SECTION 2: DOMAIN CONTEXT (copied from prompt)
+# ============================================================
+domain:
+  entry:
+    id: workflow-init
+    directory: "workflow-status/init"
+    outputs:
+      - file: "@bmm-workflow-status.yaml"
+        description: "BMM workflow tracking status"
+
+  phases:
+    discovery:
+      label: "PHASE 1: DISCOVERY"
+      directory: "1-analysis"
+      optional: true
+      parallel: true
+
+    planning:
+      label: "PHASE 2: PLANNING"
+      directory: "2-plan-workflows"
+      optional: false
+      parallel: false
+
+    solutioning:
+      label: "PHASE 3: SOLUTIONING"
+      directory: "3-solutioning"
+      optional: false
+      parallel: false
+
+    implementation:
+      label: "PHASE 4: IMPLEMENTATION"
+      directory: "4-implementation"
+      optional: false
+      parallel: false
+      has_feedback_loops: true
+
+  quick_flow:
+    directory: "bmad-quick-flow"
+    description: "Fast-track path for experienced teams"
+
+# ============================================================
+# SECTION 3: INVENTORY (discovered from source)
+# ============================================================
+inventory:
+  workflows:
+    # Entry Point
+    - id: workflow-init
+      phase: entry
+      name: /workflow-init
+      outputs:
+        - "@bmm-workflow-status.yaml"
+      next_steps:
+        - workflow: product-brief
+          evidence: "instructions.md:246: 'Product Brief - Strategic product planning'"
+        - workflow: research
+          evidence: "instructions.md:247: 'Research - Technical/competitive analysis'"
+
+    # Phase 1: Discovery
+    - id: product-brief
+      phase: discovery
+      name: /product-brief
+      outputs:
+        - "@product-brief.md"
+      next_steps: []
+
+    - id: research
+      phase: discovery
+      name: /research
+      outputs: []
+      next_steps: []
+
+    # Phase 2: Planning
+    - id: prd
+      phase: planning
+      name: /prd
+      outputs:
+        - "@PRD.md"
+      next_steps:
+        - workflow: create-ux-design
+          evidence: "workflow.md - sequential flow to UX design"
+
+    - id: create-ux-design
+      phase: planning
+      name: /create-ux-design
+      outputs:
+        - "@ux-design-specification.md"
+        - "@ux-color-themes.html"
+        - "@ux-design-directions.html"
+      next_steps:
+        - workflow: architecture
+          evidence: "workflow.md:30-38 - Paths section references architecture as next"
+
+    # Phase 3: Solutioning
+    - id: architecture
+      phase: solutioning
+      name: /architecture
+      outputs:
+        - "@architecture.md"
+      next_steps:
+        - workflow: create-epics-and-stories
+          evidence: "instructions.md - sequential flow"
+
+    - id: create-epics-and-stories
+      phase: solutioning
+      name: /create-epics-and-stories
+      outputs:
+        - "@epics.md"
+      next_steps:
+        - workflow: implementation-readiness
+          evidence: "instructions.md:380: 'Ready for Phase 4: Sprint Planning'"
+
+    - id: implementation-readiness
+      phase: solutioning
+      name: /implementation-readiness
+      outputs:
+        - "@implementation-readiness-report.md"
+      next_steps:
+        - workflow: sprint-planning
+          evidence: "instructions.md:309: 'run the sprint-planning workflow'"
+
+    # Phase 4: Implementation
+    - id: sprint-planning
+      phase: implementation
+      name: /sprint-planning
+      outputs:
+        - "@sprint-status.yaml"
+      next_steps:
+        - workflow: create-story
+          evidence: "instructions.md:184: 'Next Steps: Use this file to track development'"
+
+    - id: create-story
+      phase: implementation
+      name: /create-story
+      outputs:
+        - "@{epic}-{story}-*.md"
+      next_steps:
+        - workflow: dev-story
+          evidence: "instructions.xml:339: 'Run dev agents dev-story'"
+
+    - id: dev-story
+      phase: implementation
+      name: /dev-story
+      outputs: []
+      next_steps:
+        - workflow: code-review
+          evidence: "instructions.xml:396: 'Run code-review workflow for peer review'"
+
+    - id: code-review
+      phase: implementation
+      name: /code-review
+      outputs: []
+      next_steps:
+        - workflow: dev-story
+          evidence: "instructions.xml:143-158: feedback loop for fixes"
+
+    - id: retrospective
+      phase: implementation
+      name: /retrospective
+      outputs: []
+      next_steps:
+        - workflow: sprint-planning
+          evidence: "instructions.md:1399: 'drafting stories with SM agent'"
+
+    - id: correct-course
+      phase: implementation
+      name: /correct-course
+      outputs:
+        - "@sprint-change-proposal.md"
+      next_steps: []
+
+    # Quick Flow
+    - id: create-tech-spec
+      phase: quick_flow
+      name: /create-tech-spec
+      outputs:
+        - "@tech-spec.md"
+      next_steps:
+        - workflow: quick-dev
+          evidence: "workflow.yaml:21: 'quick_dev_workflow'"
+
+    - id: quick-dev
+      phase: quick_flow
+      name: /quick-dev
+      outputs: []
+      next_steps:
+        - workflow: create-tech-spec
+          evidence: "workflow.yaml:24: 'create_tech_spec_workflow'"
+
+  connections:
+    # Entry to Phase 1
+    - from: workflow-init
+      to: product-brief
+      type: sequential
+      scope: cross-phase
+
+    - from: workflow-init
+      to: research
+      type: sequential
+      scope: cross-phase
+
+    # Phase 1 to Phase 2
+    - from: product-brief
+      to: prd
+      type: sequential
+      scope: cross-phase
+
+    # Phase 2 internal
+    - from: prd
+      to: create-ux-design
+      type: sequential
+      scope: within-phase
+
+    # Phase 2 to Phase 3
+    - from: create-ux-design
+      to: architecture
+      type: sequential
+      scope: cross-phase
+
+    # Phase 3 internal
+    - from: architecture
+      to: create-epics-and-stories
+      type: sequential
+      scope: within-phase
+
+    - from: create-epics-and-stories
+      to: implementation-readiness
+      type: sequential
+      scope: within-phase
+
+    # Phase 3 to Phase 4
+    - from: implementation-readiness
+      to: sprint-planning
+      type: sequential
+      scope: cross-phase
+
+    # Phase 4 internal
+    - from: sprint-planning
+      to: create-story
+      type: sequential
+      scope: within-phase
+
+    - from: create-story
+      to: dev-story
+      type: sequential
+      scope: within-phase
+
+    - from: dev-story
+      to: code-review
+      type: sequential
+      scope: within-phase
+
+    # Quick Flow connections
+    - from: workflow-init
+      to: create-tech-spec
+      type: sequential
+      scope: quick-flow
+
+    - from: create-tech-spec
+      to: quick-dev
+      type: sequential
+      scope: quick-flow
+
+  legend:
+    - file: "@bmm-workflow-status.yaml"
+      description: "BMM workflow tracking status"
+    - file: "@product-brief.md"
+      description: "Product vision and requirements"
+    - file: "@PRD.md"
+      description: "Product requirements document"
+    - file: "@ux-design-specification.md"
+      description: "UX design and wireframes"
+    - file: "@ux-color-themes.html"
+      description: "UX color theme options"
+    - file: "@ux-design-directions.html"
+      description: "UX design direction options"
+    - file: "@architecture.md"
+      description: "System architecture and design"
+    - file: "@epics.md"
+      description: "Epic and story breakdown"
+    - file: "@implementation-readiness-report.md"
+      description: "Implementation readiness report"
+    - file: "@sprint-status.yaml"
+      description: "Sprint status and planning"
+    - file: "@{epic}-{story}-*.md"
+      description: "Story implementation details"
+    - file: "@sprint-change-proposal.md"
+      description: "Sprint change proposal"
+    - file: "@tech-spec.md"
+      description: "Technical specification"
+
+# ============================================================
+# SECTION 4: ANNOTATIONS (human-maintained)
+# ============================================================
+annotations:
+  decisions:
+    - id: has-ui
+      after: prd
+      label: "Has UI?"
+      branches:
+        - condition: "Yes"
+          to: create-ux-design
+        - condition: "No"
+          to: architecture
+      reason: "UI decision affects whether UX design phase is needed"
+
+  standalone_workflows:
+    - id: correct-course
+      reason: "Run ad-hoc when issues arise, not part of main flow"
+
+  optional_workflows:
+    - id: research
+      reason: "Optional discovery activity, not required for all projects"
+
+  feedback_loops:
+    - from: code-review
+      to: dev-story
+      label: "fixes"
+    - from: retrospective
+      to: sprint-planning
+      label: "next epic"
+
+  output_descriptions:
+    "@bmm-workflow-status.yaml": "BMM workflow tracking status"
+    "@product-brief.md": "Product vision and requirements"
+    "@PRD.md": "Product requirements document"
+    "@ux-design-specification.md": "UX design and wireframes"
+    "@ux-color-themes.html": "UX color theme options"
+    "@ux-design-directions.html": "UX design direction options"
+    "@architecture.md": "System architecture and design"
+    "@epics.md": "Epic and story breakdown"
+    "@implementation-readiness-report.md": "Implementation readiness report"
+    "@sprint-status.yaml": "Sprint status and planning"
+    "@{epic}-{story}-*.md": "Story implementation details"
+    "@sprint-change-proposal.md": "Sprint change proposal"
+    "@tech-spec.md": "Technical specification"
