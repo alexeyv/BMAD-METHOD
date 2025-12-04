@@ -1,21 +1,36 @@
 # Generate BMM Workflow Manifest
 
-This prompt generates a YAML manifest of all BMM workflows by discovering what actually exists in source. It uses a three-part architecture (Domain + Inventory + Annotations) with git-anchored change validation to eliminate LLM variance.
+This prompt generates a YAML manifest of BMM and core workflows/agents by discovering what actually exists in source. It uses a three-part architecture (Domain + Inventory + Annotations) with git-anchored change validation to eliminate LLM variance.
 
 ---
 
 ## Domain Context (Static Knowledge)
 
-Before executing any phase, absorb this stable BMM structure knowledge. This is your frame of reference - workflows within are DISCOVERED, not assumed.
+Before executing any phase, absorb this stable structure knowledge. This is your frame of reference - workflows and agents within are DISCOVERED, not assumed.
 
 ```yaml
-# BMM Domain Context - Provided knowledge, not discovered
-bmm_structure:
-  description: |
-    BMM (BMad Method) is a 4-phase software development methodology.
-    Phases are sequential, but Phase 1 (Discovery) is optional.
-    Quick-flow is a parallel fast-track for experienced teams.
+# Domain Context - Provided knowledge, not discovered
+modules:
+  # Core module - foundational workflows/agents available to all modules
+  core:
+    description: |
+      Foundation module with base agents and workflows used across all modules.
+      Core workflows have no phase - they are utilities invoked by other workflows.
+    source_root: 'src/core'
+    agents_path: 'src/core/agents'
+    workflows_path: 'src/core/workflows'
 
+  # BMM module - the BMad Method with phased workflows
+  bmm:
+    description: |
+      BMM (BMad Method) is a 4-phase software development methodology.
+      Phases are sequential, but Phase 1 (Discovery) is optional.
+      Quick-flow is a parallel fast-track for experienced teams.
+    source_root: 'src/modules/bmm'
+    agents_path: 'src/modules/bmm/agents'
+    workflows_path: 'src/modules/bmm/workflows'
+
+bmm_structure:
   source_root: 'src/modules/bmm/workflows'
 
   phases:
@@ -81,6 +96,14 @@ bmm_structure:
 1. **Directory Existence**
 
    ```
+   # Core module
+   [ ] src/core/ exists
+   [ ] src/core/agents/ exists
+   [ ] src/core/workflows/ exists
+
+   # BMM module
+   [ ] src/modules/bmm/ exists
+   [ ] src/modules/bmm/agents/ exists
    [ ] src/modules/bmm/workflows/ exists
    [ ] 1-analysis/ exists
    [ ] 2-plan-workflows/ exists
@@ -132,6 +155,70 @@ Scan `workflow-status/init/`:
 - Look for `workflow.yaml` or `workflow.md`
 - Extract: id, name, outputs (from `default_output_file` or conventions)
 
+### Step 2.2a: Discover Agents
+
+**Objective:** Build agent roster and agent-to-workflows map for later assignment.
+
+1. **Scan agent files from all modules**
+
+   ```
+   Glob: src/core/agents/*.agent.yaml        → module: core
+   Glob: src/modules/bmm/agents/*.agent.yaml → module: bmm
+   ```
+
+2. **For each agent file:**
+   - Determine `module` from path (`src/core/` → `core`, `src/modules/bmm/` → `bmm`)
+   - Extract `id` from filename (e.g., `sm.agent.yaml` → `sm`)
+   - Read `agent.metadata.name` → `name`
+   - Read `agent.metadata.title` → `title`
+   - Read `agent.metadata.icon` → `icon`
+   - Read `agent.menu[]` → collect all workflow triggers
+   - Build agent roster entry and agent-to-workflows mapping
+
+3. **Build inventory.agents roster**
+
+   ```yaml
+   agents:
+     - id: <agent-id> # From filename
+       module: <module> # core or bmm
+       name: <name> # From agent.metadata.name
+       title: <title> # From agent.metadata.title
+       icon: <icon> # From agent.metadata.icon
+   ```
+
+4. **Build agent-to-workflows map** (internal, for Step 2.3)
+
+   ```yaml
+   agent_workflows:
+     <agent-id>: [<workflow-id>, <workflow-id>, ...]
+     # Collected from agent.menu[] entries
+   ```
+
+5. **Report agent discovery**
+
+   ```
+   Discovered N agents:
+     - core: [list core agent ids]
+     - bmm: [list bmm agent ids]
+   ```
+
+### Step 2.2b: Load Path Files for Agent Assignments
+
+**Objective:** Load path files which contain authoritative agent assignments.
+
+1. **Scan path files**
+
+   ```
+   Glob: src/modules/bmm/workflows/workflow-status/paths/*.yaml
+   ```
+
+2. **For each path file:**
+   - Parse YAML content
+   - For each workflow entry with `agent:` field, record the assignment
+   - Build path-file-agents map: `{ workflow-id: agent-id }`
+
+3. **This map is used in Step 2.3 as the PRIMARY source for agent assignments**
+
 ### Step 2.3: Discover Phase Workflows
 
 For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-implementation`):
@@ -181,28 +268,107 @@ For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-
      - Record connection to that workflow
    - Record as `next_steps` with evidence: `"line N: '<quoted text>'"` or `"file.md:N: '<quoted text>'"`
 
+5. **Assign agent to workflow** (using data from Steps 2.2a and 2.2b):
+
+   a. **Check path files for agent (PRIMARY source)**
+   - Look up workflow id in path-file-agents map from Step 2.2b
+   - If `agent:` field exists → set as `agent`
+   - Track internally: source = path-file (for Discovery Report only, not persisted)
+
+   b. **Check agent files for workflow (SECONDARY source)**
+   - Search agent-to-workflows map from Step 2.2a for this workflow
+   - Collect all agents that claim this workflow in their menu
+   - Exclude primary agent from this list → `alternate_agents`
+
+   c. **Handle fallback**
+   - IF no agent from path file AND agents claim workflow in menu:
+     - Use first claiming agent as `agent`
+     - Track internally: source = agent-file (for Discovery Report only, not persisted)
+     - **WARN:** `"{workflow}: agent sourced from fallback (agent file), not primary (path file)"`
+   - IF no agent found anywhere:
+     - Set `agent: null`
+     - No warning (agentless workflows are valid)
+
+   d. **Build workflow entry with agent**
+
+   ```yaml
+   - id: <workflow-id>
+     module: bmm
+     phase: <phase>
+     name: /<workflow-name>
+     agent: <agent-id>
+     alternate_agents: [...]
+     outputs: [...]
+     next_steps: [...]
+   ```
+
+   Note: `agent_source` is NOT written to manifest - it's only used for Discovery Report output.
+
 ### Step 2.4: Discover Quick Flow Workflows
 
 Apply same process to `bmad-quick-flow/`:
 
-- Use `phase: quick_flow` to indicate these are quick-flow workflows
+- Use `module: bmm` and `phase: quick_flow` to indicate these are quick-flow workflows
+
+### Step 2.4a: Discover Core Workflows
+
+Scan `src/core/workflows/`:
+
+1. **List subdirectories** - each is a potential workflow
+2. **For each subdirectory:**
+   - Look for `workflow.yaml` OR `workflow.md`
+   - If neither exists → skip (not a workflow)
+   - Extract from config:
+     - `id`: directory name
+     - `name`: from config `name` field, prefix with `/`
+     - `outputs`: extract using output extraction rules
+3. **Tag with module, no phase:**
+   - `module: core`
+   - No `phase` field (core workflows are not part of BMM phases)
+4. **Agent assignment:** Apply same agent assignment logic from Step 2.3.5
 
 ### Step 2.5: Build Inventory Section
 
-Compile all discovered workflows into the inventory structure:
+Compile all discovered data into the inventory structure:
 
-```yaml
-inventory:
-  workflows:
-    - id: <workflow-id>
-      phase: <phase_key> # From parent directory
-      name: /<workflow-name>
-      outputs:
-        - '@filename.md' # Just the file, no description
-      next_steps: # From instructions
-        - workflow: <target-id>
-          evidence: "line N: '...'"
-```
+1. **Include agents roster** (from Step 2.2a)
+
+   ```yaml
+   inventory:
+     agents:
+       - id: <agent-id> # From filename
+         module: <module> # core or bmm
+         name: <agent-name> # From agent.metadata.name
+         title: <agent-title> # From agent.metadata.title
+         icon: <agent-icon> # From agent.metadata.icon
+   ```
+
+2. **Include workflows with agent assignments** (from Steps 2.3, 2.4, and 2.4a)
+
+   ```yaml
+   workflows:
+     # BMM workflow (has phase)
+     - id: <workflow-id>
+       module: bmm
+       phase: <phase_key> # From parent directory (BMM only)
+       name: /<workflow-name>
+       agent: <agent-id> # From Step 2.3.5 (or null if agentless)
+       alternate_agents: [] # From Step 2.3.5b
+       outputs:
+         - '@filename.md' # Just the file, no description
+       next_steps: # From instructions
+         - workflow: <target-id>
+           evidence: "line N: '...'"
+
+     # Core workflow (no phase)
+     - id: <workflow-id>
+       module: core
+       name: /<workflow-name>
+       agent: <agent-id>
+       alternate_agents: []
+       outputs: [...]
+       next_steps: [...]
+   ```
 
 ### Step 2.6: Derive Connections
 
@@ -228,6 +394,31 @@ legend:
 
 If an output file has no entry in `output_descriptions`, use an empty description or flag for human review.
 
+### Step 2.8: Agent Consistency Validation
+
+**Objective:** Cross-validate agent assignments and emit warnings for inconsistencies.
+
+1. **Validate path-file assignments against agent menus**
+
+   For each workflow with `agent` assigned from path file:
+   - Check if that agent's `.agent.yaml` has this workflow in its menu
+   - IF NOT → **WARN:** `"Path assigns '{workflow}' to '{agent}', but {agent}.agent.yaml has no menu entry"`
+
+2. **Validate agent menu claims against inventory**
+
+   For each agent in roster:
+   - For each workflow in agent's menu:
+     - Check if workflow exists in discovered inventory
+     - IF NOT → **WARN:** `"Agent '{agent}' claims '{workflow}' but workflow not found in inventory"`
+
+3. **Track warning counts**
+   - Count fallback warnings (from Step 2.3.5c)
+   - Count path-agent mismatch warnings
+   - Count orphan claim warnings
+   - Store totals for Discovery Report
+
+**Important:** Warnings do NOT block manifest generation. Always generate manifest, surface issues for humans to fix.
+
 ### Discovery Report
 
 After completing discovery, report:
@@ -235,12 +426,32 @@ After completing discovery, report:
 ```
 Discovered:
   - Entry: workflow-init
-  - Phase 1 (discovery): N workflows [list ids]
-  - Phase 2 (planning): N workflows [list ids]
-  - Phase 3 (solutioning): N workflows [list ids]
-  - Phase 4 (implementation): N workflows [list ids]
-  - Quick Flow: N workflows [list ids]
-  - Total: N workflows, M output files
+
+  Agents:
+    - core: N agents [list ids]
+    - bmm: N agents [list ids]
+
+  Workflows:
+    - core: N workflows [list ids]
+    - bmm Phase 1 (discovery): N workflows [list ids]
+    - bmm Phase 2 (planning): N workflows [list ids]
+    - bmm Phase 3 (solutioning): N workflows [list ids]
+    - bmm Phase 4 (implementation): N workflows [list ids]
+    - bmm Quick Flow: N workflows [list ids]
+
+  Total: N agents, M workflows, P output files
+
+Agent Assignments:
+  ✓ <workflow>: agent=<agent> (source: path-file)
+  ✓ <workflow>: agent=<agent> (source: agent-file) ⚠️ FALLBACK
+  ... (list all workflows with agent assignments)
+
+Warnings:
+  ⚠️ <workflow>: agent sourced from fallback (agent file), not primary (path file)
+  ⚠️ Agent '<agent>' claims '<workflow>' but workflow not found in inventory
+  ... (list all warnings from Step 2.8)
+
+Summary: N workflows assigned, X fallbacks, Y inconsistencies
 ```
 
 ---
@@ -443,6 +654,18 @@ annotations:
     '@{epic}-{story}-*.md': 'Story implementation details'
     '@sprint-change-proposal.md': 'Sprint change proposal'
     '@tech-spec.md': 'Technical specification'
+
+  # Human-maintained agent descriptions (for diagrams and docs)
+  agent_descriptions:
+    analyst: 'Conducts discovery research, competitive analysis, and product briefs'
+    pm: 'Manages product requirements, PRD creation, and epic/story breakdown'
+    ux-designer: 'Creates UX designs, wireframes, and design specifications'
+    architect: 'Designs system architecture and validates implementation readiness'
+    sm: 'Manages sprint planning, story creation, and retrospectives'
+    dev: 'Implements stories and conducts code reviews'
+    quick-flow-solo-dev: 'Fast-track development from spec to implementation'
+    tea: 'Test architecture, quality strategy, and test automation'
+    tech-writer: 'Documentation, diagrams, and technical writing'
 ```
 
 ---
@@ -502,15 +725,39 @@ domain:
 # SECTION 3: INVENTORY (discovered from source)
 # ============================================================
 inventory:
+  # Agent roster (discovered from agent files - Step 2.2a)
+  agents:
+    - id: <agent-id> # From filename
+      module: <module> # core or bmm
+      name: <name> # From agent.metadata.name
+      title: <title> # From agent.metadata.title
+      icon: <icon> # From agent.metadata.icon
+    # ... all discovered agents
+
+  # Workflows (discovered from Steps 2.3, 2.4, 2.4a)
   workflows:
+    # BMM workflow example (has module + phase)
     - id: <workflow-id>
-      phase: <phase_key>
+      module: bmm
+      phase: <phase_key> # BMM only: discovery|planning|solutioning|implementation|quick_flow
       name: /<workflow-name>
+      agent: <agent-id> # Primary agent (or null if agentless)
+      alternate_agents: [] # Other agents that can run this workflow
       outputs:
         - '@filename.md' # Just file paths, descriptions in annotations
       next_steps:
         - workflow: <target-id>
           evidence: "line N: '...'"
+
+    # Core workflow example (has module, no phase)
+    - id: <workflow-id>
+      module: core
+      name: /<workflow-name>
+      agent: <agent-id>
+      alternate_agents: []
+      outputs: []
+      next_steps: []
+    # ... all discovered workflows
 
   connections:
     - from: <id>
@@ -554,6 +801,10 @@ annotations:
   output_descriptions:
     '@filename.md': 'Human-authored description for legend'
     # ...
+
+  agent_descriptions:
+    # See "Standard Annotations" section for canonical values
+    # ...
 ```
 
 ---
@@ -564,11 +815,15 @@ Before finalizing, verify:
 
 ### Completeness
 
-- [ ] All phase directories scanned
+- [ ] Core module directories scanned (`src/core/agents/`, `src/core/workflows/`)
+- [ ] BMM module directories scanned (`src/modules/bmm/agents/`, `src/modules/bmm/workflows/`)
+- [ ] All BMM phase directories scanned
 - [ ] All subdirectories checked for workflow configs
 - [ ] All workflow.yaml/workflow.md files read
 - [ ] All output files extracted
 - [ ] Version, commit, timestamp included
+- [ ] All agent files scanned (`*.agent.yaml`) from both modules
+- [ ] All path files scanned for agent assignments
 
 ### Accuracy
 
@@ -576,6 +831,21 @@ Before finalizing, verify:
 - [ ] NO phantom workflows (verify each id maps to real directory)
 - [ ] Output files match what's in configs
 - [ ] Connections derived from actual instruction text
+- [ ] Agent assignments use hierarchy: path-file primary, agent-file fallback
+- [ ] Agent IDs extracted from filenames, not content
+- [ ] All agents have correct `module` field (core or bmm)
+- [ ] All workflows have correct `module` field
+- [ ] BMM workflows have `phase` field, core workflows do not
+
+### Agent Validation
+
+- [ ] `inventory.agents` section includes all discovered agents
+- [ ] Each workflow has `agent` field (primary or null)
+- [ ] Each workflow has `alternate_agents` array
+- [ ] `annotations.agent_descriptions` section present
+- [ ] Warnings emitted for fallback usage
+- [ ] Warnings emitted for path-agent mismatches
+- [ ] Warnings emitted for orphan menu claims
 
 ### Git Validation
 
