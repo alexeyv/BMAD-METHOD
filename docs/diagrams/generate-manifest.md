@@ -76,6 +76,46 @@ bmm_structure:
       - 'testarch/*' # Test architecture, separate concern
       - 'document-project/*' # Utility workflow
       - 'generate-project-context/*' # Utility workflow
+
+  tracking_systems:
+    workflow_status:
+      file: '@bmm-workflow-status.yaml'
+      covers: [discovery, planning, solutioning]
+      description: 'Phase-level progress tracking via artifact detection'
+      entity: workflow
+      states:
+        - pending # Workflow not yet started (required/optional/recommended/conditional)
+        - complete # Output artifact exists
+        - skipped # Explicitly skipped
+
+    sprint_status:
+      file: '@sprint-status.yaml'
+      covers: [implementation]
+      description: 'Per-story iterative tracking with explicit state machine'
+      entities:
+        epic:
+          states:
+            - backlog # Epic not yet started
+            - in-progress # Epic actively being worked on
+            - done # All stories in epic completed
+        story:
+          states:
+            - backlog # Story only exists in epic file
+            - drafted # Story file created
+            - ready-for-dev # Draft approved, ready for implementation
+            - in-progress # Developer actively working
+            - review # Ready for code review
+            - done # Completed
+        retrospective:
+          states:
+            - optional # Can be completed but not required
+            - completed # Retrospective done
+
+    handoff:
+      from: workflow_status
+      to: sprint_status
+      at_workflow: sprint-planning
+      reason: 'Implementation is iterative per-story; requires different tracking model'
 ```
 
 **Critical understanding:**
@@ -720,6 +760,32 @@ domain:
   quick_flow:
     directory: 'bmad-quick-flow'
     description: 'Fast-track path for experienced teams'
+
+  tracking_systems:
+    workflow_status:
+      file: '@bmm-workflow-status.yaml'
+      covers: [discovery, planning, solutioning]
+      description: 'Phase-level progress tracking via artifact detection'
+      entity: workflow
+      states: [pending, complete, skipped]
+
+    sprint_status:
+      file: '@sprint-status.yaml'
+      covers: [implementation]
+      description: 'Per-story iterative tracking with explicit state machine'
+      entities:
+        epic:
+          states: [backlog, in-progress, done]
+        story:
+          states: [backlog, drafted, ready-for-dev, in-progress, review, done]
+        retrospective:
+          states: [optional, completed]
+
+    handoff:
+      from: workflow_status
+      to: sprint_status
+      at_workflow: sprint-planning
+      reason: 'Implementation is iterative per-story; requires different tracking model'
 
 # ============================================================
 # SECTION 3: INVENTORY (discovered from source)

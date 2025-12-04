@@ -1,344 +1,378 @@
-# ============================================================
-# SECTION 1: METADATA (auto-updated each run)
-# ============================================================
 version: "1.0"
-generated: "2025-12-01T17:55:42Z"
-source_commit: "64c2c8f6"
-bmad_version: "6.0.0-alpha.13"
-
-# ============================================================
-# SECTION 2: DOMAIN CONTEXT (copied from prompt)
-# ============================================================
+generated: "2025-12-04T14:04:28.996Z"
+source_commit: 82b4a844
+bmad_version: 6.0.0-alpha.13
 domain:
   entry:
     id: workflow-init
-    directory: "workflow-status/init"
+    directory: workflow-status/init
     outputs:
       - file: "@bmm-workflow-status.yaml"
-        description: "BMM workflow tracking status"
-
+        description: BMM workflow tracking status
   phases:
     discovery:
       label: "PHASE 1: DISCOVERY"
-      directory: "1-analysis"
+      directory: 1-analysis
       optional: true
       parallel: true
-
     planning:
       label: "PHASE 2: PLANNING"
-      directory: "2-plan-workflows"
+      directory: 2-plan-workflows
       optional: false
       parallel: false
-
     solutioning:
       label: "PHASE 3: SOLUTIONING"
-      directory: "3-solutioning"
+      directory: 3-solutioning
       optional: false
       parallel: false
-
     implementation:
       label: "PHASE 4: IMPLEMENTATION"
-      directory: "4-implementation"
+      directory: 4-implementation
       optional: false
       parallel: false
       has_feedback_loops: true
-
   quick_flow:
-    directory: "bmad-quick-flow"
-    description: "Fast-track path for experienced teams"
-
-# ============================================================
-# SECTION 3: INVENTORY (discovered from source)
-# ============================================================
+    directory: bmad-quick-flow
+    description: Fast-track path for experienced teams
+  tracking_systems:
+    workflow_status:
+      file: "@bmm-workflow-status.yaml"
+      covers:
+        - discovery
+        - planning
+        - solutioning
+      description: Phase-level progress tracking via artifact detection
+      entity: workflow
+      states:
+        - pending
+        - complete
+        - skipped
+    sprint_status:
+      file: "@sprint-status.yaml"
+      covers:
+        - implementation
+      description: Per-story iterative tracking with explicit state machine
+      entities:
+        epic:
+          states:
+            - backlog
+            - in-progress
+            - done
+        story:
+          states:
+            - backlog
+            - drafted
+            - ready-for-dev
+            - in-progress
+            - review
+            - done
+        retrospective:
+          states:
+            - optional
+            - completed
+    handoff:
+      from: workflow_status
+      to: sprint_status
+      at_workflow: sprint-planning
+      reason: Implementation is iterative per-story; requires different tracking model
 inventory:
+  agents:
+    - id: analyst
+      module: bmm
+      name: Mary
+      title: Business Analyst
+      icon: 📊
+    - id: architect
+      module: bmm
+      name: Winston
+      title: Architect
+      icon: 🏗️
+    - id: dev
+      module: bmm
+      name: Amelia
+      title: Developer Agent
+      icon: 💻
+    - id: pm
+      module: bmm
+      name: John
+      title: Product Manager
+      icon: 📋
+    - id: quick-flow-solo-dev
+      module: bmm
+      name: Barry
+      title: Quick Flow Solo Dev
+      icon: 🚀
+    - id: sm
+      module: bmm
+      name: Bob
+      title: Scrum Master
+      icon: 🏃
+    - id: tea
+      module: bmm
+      name: Murat
+      title: Master Test Architect
+      icon: 🧪
+    - id: tech-writer
+      module: bmm
+      name: Paige
+      title: Technical Writer
+      icon: 📚
+    - id: ux-designer
+      module: bmm
+      name: Sally
+      title: UX Designer
+      icon: 🎨
+    - id: bmad-master
+      module: core
+      name: BMad Master
+      title: BMad Master Executor, Knowledge Custodian, and Workflow Orchestrator
+      icon: 🧙
   workflows:
-    # Entry Point
-    - id: workflow-init
-      phase: entry
-      name: /workflow-init
-      outputs:
-        - "@bmm-workflow-status.yaml"
-      next_steps:
-        - workflow: product-brief
-          evidence: "instructions.md:246: 'Product Brief - Strategic product planning'"
-        - workflow: research
-          evidence: "instructions.md:247: 'Research - Technical/competitive analysis'"
-
-    # Phase 1: Discovery
     - id: product-brief
-      phase: discovery
+      module: bmm
       name: /product-brief
+      agent: analyst
+      alternate_agents: []
       outputs:
         - "@product-brief.md"
       next_steps: []
-
-    - id: research
       phase: discovery
+    - id: research
+      module: bmm
       name: /research
+      agent: analyst
+      alternate_agents: []
       outputs: []
       next_steps: []
-
-    # Phase 2: Planning
-    - id: prd
-      phase: planning
-      name: /prd
-      outputs:
-        - "@PRD.md"
-      next_steps:
-        - workflow: create-ux-design
-          evidence: "workflow.md - sequential flow to UX design"
-
+      phase: discovery
     - id: create-ux-design
-      phase: planning
+      module: bmm
       name: /create-ux-design
+      agent: ux-designer
+      alternate_agents: []
       outputs:
         - "@ux-design-specification.md"
         - "@ux-color-themes.html"
         - "@ux-design-directions.html"
-      next_steps:
-        - workflow: architecture
-          evidence: "workflow.md:30-38 - Paths section references architecture as next"
-
-    # Phase 3: Solutioning
+      next_steps: []
+      phase: planning
+    - id: prd
+      module: bmm
+      name: /prd
+      agent: pm
+      alternate_agents: []
+      outputs:
+        - "@PRD.md"
+      next_steps: []
+      phase: planning
     - id: architecture
-      phase: solutioning
+      module: bmm
       name: /architecture
+      agent: architect
+      alternate_agents: []
       outputs:
         - "@architecture.md"
-      next_steps:
-        - workflow: create-epics-and-stories
-          evidence: "instructions.md - sequential flow"
-
-    - id: create-epics-and-stories
+      next_steps: []
       phase: solutioning
+    - id: create-epics-and-stories
+      module: bmm
       name: /create-epics-and-stories
+      agent: pm
+      alternate_agents: []
       outputs:
         - "@epics.md"
-      next_steps:
-        - workflow: implementation-readiness
-          evidence: "instructions.md:380: 'Ready for Phase 4: Sprint Planning'"
-
-    - id: implementation-readiness
+      next_steps: []
       phase: solutioning
+    - id: implementation-readiness
+      module: bmm
       name: /implementation-readiness
+      agent: architect
+      alternate_agents:
+        - pm
       outputs:
-        - "@implementation-readiness-report.md"
-      next_steps:
-        - workflow: sprint-planning
-          evidence: "instructions.md:309: 'run the sprint-planning workflow'"
-
-    # Phase 4: Implementation
-    - id: sprint-planning
+        - "@impl-readiness-report.md"
+      next_steps: []
+      phase: solutioning
+    - id: code-review
+      module: bmm
+      name: /code-review
+      agent: dev
+      alternate_agents:
+        - quick-flow-solo-dev
+      outputs: []
+      next_steps: []
       phase: implementation
-      name: /sprint-planning
+    - id: correct-course
+      module: bmm
+      name: /correct-course
+      agent: pm
+      alternate_agents:
+        - sm
       outputs:
-        - "@sprint-status.yaml"
-      next_steps:
-        - workflow: create-story
-          evidence: "instructions.md:184: 'Next Steps: Use this file to track development'"
-
+        - "@sprint-change-proposal-.md"
+      next_steps: []
+      phase: implementation
     - id: create-story
-      phase: implementation
+      module: bmm
       name: /create-story
+      agent: sm
+      alternate_agents: []
       outputs:
         - "@{epic}-{story}-*.md"
-      next_steps:
-        - workflow: dev-story
-          evidence: "instructions.xml:339: 'Run dev agents dev-story'"
-
-    - id: dev-story
-      phase: implementation
-      name: /dev-story
-      outputs: []
-      next_steps:
-        - workflow: code-review
-          evidence: "instructions.xml:396: 'Run code-review workflow for peer review'"
-
-    - id: code-review
-      phase: implementation
-      name: /code-review
-      outputs: []
-      next_steps:
-        - workflow: dev-story
-          evidence: "instructions.xml:143-158: feedback loop for fixes"
-
-    - id: retrospective
-      phase: implementation
-      name: /retrospective
-      outputs: []
-      next_steps:
-        - workflow: sprint-planning
-          evidence: "instructions.md:1399: 'drafting stories with SM agent'"
-
-    - id: correct-course
-      phase: implementation
-      name: /correct-course
-      outputs:
-        - "@sprint-change-proposal.md"
       next_steps: []
-
-    # Quick Flow
+      phase: implementation
+    - id: dev-story
+      module: bmm
+      name: /dev-story
+      agent: dev
+      alternate_agents: []
+      outputs: []
+      next_steps: []
+      phase: implementation
+    - id: retrospective
+      module: bmm
+      name: /retrospective
+      agent: sm
+      alternate_agents: []
+      outputs: []
+      next_steps: []
+      phase: implementation
+    - id: sprint-planning
+      module: bmm
+      name: /sprint-planning
+      agent: sm
+      alternate_agents: []
+      outputs:
+        - "@sprint-status.yaml"
+      next_steps: []
+      phase: implementation
+    - id: sprint-status
+      module: bmm
+      name: /sprint-status
+      agent: null
+      alternate_agents: []
+      outputs: []
+      next_steps: []
+      phase: implementation
     - id: create-tech-spec
-      phase: quick_flow
+      module: bmm
       name: /create-tech-spec
+      agent: quick-flow-solo-dev
+      alternate_agents: []
       outputs:
         - "@tech-spec.md"
-      next_steps:
-        - workflow: quick-dev
-          evidence: "workflow.yaml:21: 'quick_dev_workflow'"
-
-    - id: quick-dev
+      next_steps: []
       phase: quick_flow
+    - id: quick-dev
+      module: bmm
       name: /quick-dev
+      agent: quick-flow-solo-dev
+      alternate_agents: []
       outputs: []
-      next_steps:
-        - workflow: create-tech-spec
-          evidence: "workflow.yaml:24: 'create_tech_spec_workflow'"
-
-  connections:
-    # Entry to Phase 1
-    - from: workflow-init
-      to: product-brief
-      type: sequential
-      scope: cross-phase
-
-    - from: workflow-init
-      to: research
-      type: sequential
-      scope: cross-phase
-
-    # Phase 1 to Phase 2
-    - from: product-brief
-      to: prd
-      type: sequential
-      scope: cross-phase
-
-    # Phase 2 internal
-    - from: prd
-      to: create-ux-design
-      type: sequential
-      scope: within-phase
-
-    # Phase 2 to Phase 3
-    - from: create-ux-design
-      to: architecture
-      type: sequential
-      scope: cross-phase
-
-    # Phase 3 internal
-    - from: architecture
-      to: create-epics-and-stories
-      type: sequential
-      scope: within-phase
-
-    - from: create-epics-and-stories
-      to: implementation-readiness
-      type: sequential
-      scope: within-phase
-
-    # Phase 3 to Phase 4
-    - from: implementation-readiness
-      to: sprint-planning
-      type: sequential
-      scope: cross-phase
-
-    # Phase 4 internal
-    - from: sprint-planning
-      to: create-story
-      type: sequential
-      scope: within-phase
-
-    - from: create-story
-      to: dev-story
-      type: sequential
-      scope: within-phase
-
-    - from: dev-story
-      to: code-review
-      type: sequential
-      scope: within-phase
-
-    # Quick Flow connections
-    - from: workflow-init
-      to: create-tech-spec
-      type: sequential
-      scope: quick-flow
-
-    - from: create-tech-spec
-      to: quick-dev
-      type: sequential
-      scope: quick-flow
-
+      next_steps: []
+      phase: quick_flow
+    - id: workflow-init
+      module: bmm
+      name: /workflow-init
+      agent: null
+      alternate_agents: []
+      outputs:
+        - "@bmm-workflow-status.yaml"
+      next_steps: []
+    - id: brainstorming
+      module: core
+      name: /brainstorming
+      agent: analyst
+      alternate_agents: []
+      outputs: []
+      next_steps: []
+    - id: party-mode
+      module: core
+      name: /party-mode
+      agent: bmad-master
+      alternate_agents:
+        - analyst
+        - architect
+        - pm
+        - quick-flow-solo-dev
+        - sm
+        - tea
+        - tech-writer
+        - ux-designer
+      outputs: []
+      next_steps: []
+  connections: []
   legend:
-    - file: "@bmm-workflow-status.yaml"
-      description: "BMM workflow tracking status"
-    - file: "@product-brief.md"
-      description: "Product vision and requirements"
     - file: "@PRD.md"
-      description: "Product requirements document"
-    - file: "@ux-design-specification.md"
-      description: "UX design and wireframes"
-    - file: "@ux-color-themes.html"
-      description: "UX color theme options"
-    - file: "@ux-design-directions.html"
-      description: "UX design direction options"
+      description: Product requirements document
     - file: "@architecture.md"
-      description: "System architecture and design"
+      description: System architecture and design
     - file: "@epics.md"
-      description: "Epic and story breakdown"
-    - file: "@implementation-readiness-report.md"
-      description: "Implementation readiness report"
+      description: Epic and story breakdown
+    - file: "@impl-readiness-report.md"
+      description: Implementation readiness report
+    - file: "@product-brief.md"
+      description: Product vision and requirements
+    - file: "@sprint-change-proposal-.md"
+      description: ""
     - file: "@sprint-status.yaml"
-      description: "Sprint status and planning"
-    - file: "@{epic}-{story}-*.md"
-      description: "Story implementation details"
-    - file: "@sprint-change-proposal.md"
-      description: "Sprint change proposal"
+      description: Sprint status and planning
     - file: "@tech-spec.md"
-      description: "Technical specification"
-
-# ============================================================
-# SECTION 4: ANNOTATIONS (human-maintained)
-# ============================================================
+      description: Technical specification
+    - file: "@ux-color-themes.html"
+      description: Color theme exploration
+    - file: "@ux-design-directions.html"
+      description: Visual design directions
+    - file: "@ux-design-specification.md"
+      description: UX design and wireframes
+    - file: "@{epic}-{story}-*.md"
+      description: Story implementation details
 annotations:
   decisions:
     - id: has-ui
       after: prd
-      label: "Has UI?"
+      label: Has UI?
       branches:
         - condition: "Yes"
           to: create-ux-design
         - condition: "No"
-          to: architecture
-      reason: "UI decision affects whether UX design phase is needed"
-
+          to: create-architecture
+      reason: UI decision affects whether UX design phase is needed
   standalone_workflows:
     - id: correct-course
-      reason: "Run ad-hoc when issues arise, not part of main flow"
-
+      reason: Run ad-hoc when issues arise, not part of main flow
   optional_workflows:
-    - id: research
-      reason: "Optional discovery activity, not required for all projects"
-
+    - id: create-tech-spec
+      reason: Part of quick-flow path, not required in main BMM flow
   feedback_loops:
     - from: code-review
       to: dev-story
-      label: "fixes"
+      label: fixes
     - from: retrospective
       to: sprint-planning
-      label: "next epic"
-
+      label: next epic
   output_descriptions:
-    "@bmm-workflow-status.yaml": "BMM workflow tracking status"
-    "@product-brief.md": "Product vision and requirements"
-    "@PRD.md": "Product requirements document"
-    "@ux-design-specification.md": "UX design and wireframes"
-    "@ux-color-themes.html": "UX color theme options"
-    "@ux-design-directions.html": "UX design direction options"
-    "@architecture.md": "System architecture and design"
-    "@epics.md": "Epic and story breakdown"
-    "@implementation-readiness-report.md": "Implementation readiness report"
-    "@sprint-status.yaml": "Sprint status and planning"
-    "@{epic}-{story}-*.md": "Story implementation details"
-    "@sprint-change-proposal.md": "Sprint change proposal"
-    "@tech-spec.md": "Technical specification"
+    "@bmm-workflow-status.yaml": BMM workflow tracking status
+    "@product-brief.md": Product vision and requirements
+    "@PRD.md": Product requirements document
+    "@ux-design-specification.md": UX design and wireframes
+    "@ux-color-themes.html": Color theme exploration
+    "@ux-design-directions.html": Visual design directions
+    "@architecture.md": System architecture and design
+    "@epics.md": Epic and story breakdown
+    "@impl-readiness-report.md": Implementation readiness report
+    "@sprint-status.yaml": Sprint status and planning
+    "@{epic}-{story}-*.md": Story implementation details
+    "@sprint-change-proposal.md": Sprint change proposal
+    "@tech-spec.md": Technical specification
+  agent_descriptions:
+    bmad-master: Master task executor and workflow orchestrator
+    analyst: Conducts discovery research, competitive analysis, and product briefs
+    pm: Manages product requirements, PRD creation, and epic/story breakdown
+    ux-designer: Creates UX designs, wireframes, and design specifications
+    architect: Designs system architecture and validates implementation readiness
+    sm: Manages sprint planning, story creation, and retrospectives
+    dev: Implements stories and conducts code reviews
+    quick-flow-solo-dev: Fast-track development from spec to implementation
+    tea: Test architecture, quality strategy, and test automation
+    tech-writer: Documentation, diagrams, and technical writing
