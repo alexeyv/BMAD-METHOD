@@ -1,283 +1,618 @@
 # Generate BMM Workflow Manifest
 
-This prompt generates a YAML manifest of all BMM workflows, their connections, and dependencies. The manifest serves as the source of truth for diagram generation and workflow documentation.
+This prompt generates a YAML manifest of all BMM workflows by discovering what actually exists in source. It uses a three-part architecture (Domain + Inventory + Annotations) with git-anchored change validation to eliminate LLM variance.
 
-## Instructions
+---
 
-You are an agentic assistant tasked with researching the BMM workflow structure and generating a comprehensive manifest. Follow these steps:
+## Domain Context (Static Knowledge)
 
-### 1. Research Phase
-
-Scan the BMM workflow structure to discover all workflows:
-
-**Locations to scan:**
-
-- `src/modules/bmm/workflows/1-analysis/` - Phase 1 (Discovery) workflows
-- `src/modules/bmm/workflows/2-plan-workflows/` - Phase 2 (Planning) workflows
-- `src/modules/bmm/workflows/3-solutioning/` - Phase 3 (Solutioning) workflows
-- `src/modules/bmm/workflows/4-implementation/` - Phase 4 (Implementation) workflows
-- `src/modules/bmm/workflows/bmad-quick-flow/` - Quick Flow workflows
-- `src/modules/bmm/workflows/workflow-status/init/` - Entry point workflow
-
-**For each workflow directory, extract from `workflow.yaml`:**
-
-- `name` - The workflow name (e.g., "product-brief")
-- `default_output_file` or output patterns - What files the workflow produces
-- **DO NOT extract descriptions** - they cause false change detection and aren't used in diagrams
-
-**Additional information to gather:**
-
-- Read `package.json` to get the current BMAD version
-- Get the current git commit hash (short form): `git rev-parse --short HEAD`
-- Current timestamp in ISO format
-- **Reference `docs/diagrams/bmm-workflow.d2`** for workflow connections (not descriptions)
-
-### 2. Understand Workflow Connections
-
-Study the existing `docs/diagrams/bmm-workflow.d2` file to understand:
-
-**Within-phase connections:**
-
-- Phase 1: All activities (brainstorm, research, domain-research, document-project) converge to product-brief
-- Phase 3: architecture → create-epics-and-stories → implementation-readiness (sequential)
-- Phase 4: sprint-planning → create-story → dev-story → code-review → story-done → retrospective (sequential)
-
-**Decision points:**
-
-- Phase 2: After `/prd`, there's a "Has UI?" decision
-  - Yes → `/ux-design`
-  - No → `/architecture` (cross-phase to Phase 3)
-
-**Feedback loops (Phase 4):**
-
-- code-review → dev-story (label: "fixes")
-- story-done → create-story (label: "next story")
-- retrospective → sprint-planning (label: "next epic")
-
-**Cross-phase connections:**
-
-- Entry: workflow-init → Phase 1 activities (main flow)
-- Entry: workflow-init → quick-flow/create-tech-spec (quick-flow path)
-- Phase 1: product-brief → Phase 2 prd
-- Phase 2: ux-design → Phase 3 architecture
-- Phase 2: tech-spec → Phase 3 create-epics-and-stories (quick-flow path, dashed)
-- Phase 3: implementation-readiness → Phase 4 sprint-planning
-
-**Standalone workflows:**
-
-- Phase 4: `/correct-course` - Not part of main flow, run when issues arise
-
-### 3. Build Manifest
-
-Create a YAML manifest with this structure:
+Before executing any phase, absorb this stable BMM structure knowledge. This is your frame of reference - workflows within are DISCOVERED, not assumed.
 
 ```yaml
+# BMM Domain Context - Provided knowledge, not discovered
+bmm_structure:
+  description: |
+    BMM (BMad Method) is a 4-phase software development methodology.
+    Phases are sequential, but Phase 1 (Discovery) is optional.
+    Quick-flow is a parallel fast-track for experienced teams.
+
+  source_root: 'src/modules/bmm/workflows'
+
+  phases:
+    - key: discovery
+      label: 'PHASE 1: DISCOVERY'
+      directory: '1-analysis'
+      behavior: parallel # Workflows can run in any order
+      optional: true
+
+    - key: planning
+      label: 'PHASE 2: PLANNING'
+      directory: '2-plan-workflows'
+      behavior: sequential
+
+    - key: solutioning
+      label: 'PHASE 3: SOLUTIONING'
+      directory: '3-solutioning'
+      behavior: sequential
+
+    - key: implementation
+      label: 'PHASE 4: IMPLEMENTATION'
+      directory: '4-implementation'
+      behavior: iterative # Has feedback loops
+
+  quick_flow:
+    directory: 'bmad-quick-flow'
+    description: 'Fast-track path bypassing full discovery/planning'
+
+  entry_point:
+    directory: 'workflow-status/init'
+    workflow: 'workflow-init'
+
+  scan_rules:
+    include:
+      - '1-analysis/*'
+      - '2-plan-workflows/*'
+      - '3-solutioning/*'
+      - '4-implementation/*'
+      - 'bmad-quick-flow/*'
+      - 'workflow-status/init'
+    exclude:
+      - 'diagrams/*' # Diagram generation, not BMM phases
+      - 'testarch/*' # Test architecture, separate concern
+      - 'document-project/*' # Utility workflow
+      - 'generate-project-context/*' # Utility workflow
+```
+
+**Critical understanding:**
+
+- The phase structure (4 phases + quick-flow) IS the frame
+- Workflows within each phase are DISCOVERED from source
+- NEVER assume a workflow exists - only report what you find
+- `typical_workflows` would be hints; we don't use them to avoid confirmation bias
+
+---
+
+## Phase 1: Verify Domain Context (Rot Check)
+
+**Objective:** Confirm the domain context above still matches reality. If structure changed, STOP.
+
+### Checks to Perform
+
+1. **Directory Existence**
+
+   ```
+   [ ] src/modules/bmm/workflows/ exists
+   [ ] 1-analysis/ exists
+   [ ] 2-plan-workflows/ exists
+   [ ] 3-solutioning/ exists
+   [ ] 4-implementation/ exists
+   [ ] bmad-quick-flow/ exists
+   [ ] workflow-status/init/ exists
+   ```
+
+2. **No Unexpected Structure**
+   - List all top-level directories in `src/modules/bmm/workflows/`
+   - Compare against: `1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-implementation`, `bmad-quick-flow`, `workflow-status`, plus excluded dirs (`diagrams`, `testarch`, `document-project`, `generate-project-context`)
+   - If ANY directory exists that is NOT in this list → **HARD STOP**
+   - Report: "Unexpected directory found: `<dirname>`. Domain context may be stale."
+
+3. **Excluded Directories Still Excluded**
+   - Verify excluded dirs (`diagrams/`, `testarch/`, `document-project/`, `generate-project-context/`) are NOT inside phase directories
+   - If any appear inside a phase dir → **HARD STOP**
+
+### Outcomes
+
+- **ALL CHECKS PASS** → Proceed to Phase 2
+- **ANY CHECK FAILS** → **HARD STOP**
+  - Report exactly what failed
+  - Instruction: "Update the prompt's domain context section, then re-run"
+
+---
+
+## Phase 2: Guided Discovery
+
+**Objective:** Scan source directories and extract what actually exists. No assumptions.
+
+### Step 2.1: Gather Metadata
+
+```bash
+# Get current git commit
+git rev-parse --short HEAD
+
+# Get BMAD version from package.json
+# Extract "version" field
+
+# Get current ISO timestamp
+```
+
+### Step 2.2: Discover Entry Point
+
+Scan `workflow-status/init/`:
+
+- Look for `workflow.yaml` or `workflow.md`
+- Extract: id, name, outputs (from `default_output_file` or conventions)
+
+### Step 2.3: Discover Phase Workflows
+
+For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-implementation`):
+
+1. **List subdirectories** - each is a potential workflow
+2. **For each subdirectory:**
+   - Look for `workflow.yaml` OR `workflow.md`
+   - If neither exists → skip (not a workflow)
+   - Extract from config:
+     - `id`: directory name
+     - `name`: from config `name` field, prefix with `/`
+     - `outputs`: extract using the rules below
+
+3. **Output Extraction Rules** (in priority order):
+
+   **For YAML configs (`workflow.yaml`):**
+   - Look for `default_output_file` field → use that value
+   - If not found → `outputs: []`
+
+   **For Markdown configs (`workflow.md`):**
+   - Look for `### Paths` or `### Output Files` section
+   - Extract `default_output_file` value if present
+   - Extract any additional output files listed (e.g., HTML files)
+   - If no output section found → apply BMM Conventions (below)
+
+   **BMM Conventions** (for `.md` workflows without explicit output declarations):
+   These are documented methodology conventions, not guesses:
+   - `prd/` → `@PRD.md`
+   - `product-brief/` → `@product-brief.md`
+   - `architecture/` → `@architecture.md`
+   - `create-ux-design/` → `@ux-design-specification.md`, `@ux-color-themes.html`, `@ux-design-directions.html`
+   - `research/` → `[]` (no output file)
+   - All others → `[]` (no output file)
+
+   Note: Output _descriptions_ for the legend come from annotations, not discovery.
+
+4. **Read instructions** to find connections:
+   - Look in `instructions.md`, `workflow.md`, or `steps/*.md` files
+   - Search for these patterns:
+     - `` `workflow <name>` `` - explicit workflow command reference
+     - `/workflow-name` - slash command reference
+     - `workflow: <name>` - YAML reference
+     - `{*_workflow}` - placeholder variable (e.g., `{quick_dev_workflow}`) → extract workflow name from variable name
+     - Narrative: "proceed to", "next step", "→", "then run"
+   - For placeholder variables like `{quick_dev_workflow}`:
+     - Extract the workflow name: `quick_dev_workflow` → `quick-dev`
+     - Record connection to that workflow
+   - Record as `next_steps` with evidence: `"line N: '<quoted text>'"` or `"file.md:N: '<quoted text>'"`
+
+### Step 2.4: Discover Quick Flow Workflows
+
+Apply same process to `bmad-quick-flow/`:
+
+- Use `phase: quick_flow` to indicate these are quick-flow workflows
+
+### Step 2.5: Build Inventory Section
+
+Compile all discovered workflows into the inventory structure:
+
+```yaml
+inventory:
+  workflows:
+    - id: <workflow-id>
+      phase: <phase_key> # From parent directory
+      name: /<workflow-name>
+      outputs:
+        - '@filename.md' # Just the file, no description
+      next_steps: # From instructions
+        - workflow: <target-id>
+          evidence: "line N: '...'"
+```
+
+### Step 2.6: Derive Connections
+
+From all `next_steps`, build connections array:
+
+```yaml
+connections:
+  - from: <source-id>
+    to: <target-id>
+    type: sequential|converge
+    scope: within-phase|cross-phase
+```
+
+### Step 2.7: Build Legend
+
+Aggregate all unique output files, pulling descriptions from `annotations.output_descriptions`:
+
+```yaml
+legend:
+  - file: '@filename.md'
+    description: '...' # From annotations.output_descriptions
+```
+
+If an output file has no entry in `output_descriptions`, use an empty description or flag for human review.
+
+### Discovery Report
+
+After completing discovery, report:
+
+```
+Discovered:
+  - Entry: workflow-init
+  - Phase 1 (discovery): N workflows [list ids]
+  - Phase 2 (planning): N workflows [list ids]
+  - Phase 3 (solutioning): N workflows [list ids]
+  - Phase 4 (implementation): N workflows [list ids]
+  - Quick Flow: N workflows [list ids]
+  - Total: N workflows, M output files
+```
+
+---
+
+## Phase 3: Git-Anchored Diff
+
+**Objective:** Compare discovered inventory against existing manifest. Validate changes via git.
+
+### Step 3.1: Load Existing Manifest
+
+- Path: `docs/diagrams/workflow-manifest.yaml`
+- If doesn't exist → skip diff phase (first run)
+- Extract `source_commit` from existing manifest
+
+### Step 3.2: Compare Inventories
+
+For each difference found, classify:
+
+| Change Type         | Examples                                     |
+| ------------------- | -------------------------------------------- |
+| WORKFLOW_ADDED      | New workflow directory discovered            |
+| WORKFLOW_REMOVED    | Workflow in old manifest not found in source |
+| OUTPUT_CHANGED      | Output files differ                          |
+| CONNECTION_CHANGED  | Connections differ                           |
+| DESCRIPTION_CHANGED | Only description text differs                |
+
+### Step 3.3: Git Validation
+
+For EACH change:
+
+```bash
+OLD_COMMIT="<from existing manifest>"
+CURRENT_COMMIT=$(git rev-parse --short HEAD)
+
+# Check if workflow source actually changed
+git diff --name-only $OLD_COMMIT..$CURRENT_COMMIT -- src/modules/bmm/workflows/<affected-path>/
+```
+
+**Classify result:**
+
+| Git Diff Result  | Classification  | Action                            |
+| ---------------- | --------------- | --------------------------------- |
+| Files listed     | `GIT_CONFIRMED` | Real change - include in report   |
+| Empty (no files) | `LLM_VARIANCE`  | Non-determinism - suppress change |
+
+### Step 3.4: Handle LLM Variance
+
+For `LLM_VARIANCE` changes:
+
+- Default: KEEP old manifest value
+- Do NOT include in change report
+- Track count for summary: "Suppressed N variance artifacts"
+
+### Step 3.5: Generate Change Report
+
+```
+Changes Detected:
+
+GIT_CONFIRMED (require review):
+  - WORKFLOW_ADDED: <id>
+    Evidence: git diff shows new directory created
+  - WORKFLOW_REMOVED: <id>
+    Evidence: git diff shows directory deleted
+
+LLM_VARIANCE (suppressed):
+  - DESCRIPTION_CHANGED: <id> (no git changes in source)
+
+Summary: N real changes, M variances suppressed
+```
+
+---
+
+## Phase 4: Human Gate
+
+**Objective:** Present changes for approval. Handle different change types appropriately.
+
+### Decision Tree
+
+```
+IF no existing manifest:
+    → First run, write manifest directly
+    → Report: "Initial manifest created with N workflows"
+
+ELSE IF all changes are LLM_VARIANCE:
+    → Keep old manifest unchanged
+    → Update only: generated timestamp, source_commit
+    → Report: "No real changes detected (N variances suppressed)"
+
+ELSE IF GIT_CONFIRMED changes exist:
+    → Present change report (from Phase 3)
+    → Proceed to approval flow
+```
+
+### Approval Flow
+
+**For Quick Flow Changes:**
+
+```
+⚠️  QUICK FLOW CHANGES DETECTED
+
+The following changes affect the fast-track development path:
+<list changes>
+
+Evidence:
+<git diff summary>
+
+This is a SIGNIFICANT change affecting Quick Flow users.
+
+Options:
+  [1] Accept changes and update manifest
+  [2] Reject changes and keep existing manifest
+  [3] Show detailed diff
+
+Choose (1/2/3):
+```
+
+**For Main Workflow Changes:**
+
+```
+📋 WORKFLOW CHANGES DETECTED
+
+Changes:
+<list changes>
+
+Evidence:
+<git diff summary>
+
+Accept changes? (y/n):
+```
+
+### On Approval
+
+Write new manifest with:
+
+1. **Metadata section** - Updated timestamp, commit, version
+2. **Domain section** - Copy EXACTLY from this prompt's Domain Context
+3. **Inventory section** - From discovery
+4. **Annotations section** - Preserve from old manifest (see Annotation Rules below)
+
+### On Rejection
+
+- Keep old manifest unchanged
+- Optionally offer: "Update only metadata (timestamp, commit)? (y/n)"
+
+---
+
+## Annotation Preservation Rules
+
+The annotations section contains human-maintained edge cases not encoded in source.
+
+### Preservation Policy
+
+1. **Default: PRESERVE** - Copy annotations unchanged from old manifest
+2. **Exception: Workflow Removed** - If annotated workflow no longer exists:
+   - Flag for review: "Annotation references removed workflow: `<id>`"
+   - Ask: "Remove this annotation? (y/n)"
+3. **Never auto-generate** - Annotations come from humans, not discovery
+
+### Standard Annotations (preserve these)
+
+```yaml
+annotations:
+  decisions:
+    - id: has-ui
+      after: prd
+      label: 'Has UI?'
+      branches:
+        - condition: 'Yes'
+          to: ux-design
+        - condition: 'No'
+          to: architecture
+      reason: 'UI decision affects whether UX design phase is needed'
+
+  standalone_workflows:
+    - id: correct-course
+      reason: 'Run ad-hoc when issues arise, not part of main flow'
+
+  optional_workflows:
+    - id: tech-spec
+      reason: 'Part of quick-flow path, not required in main BMM flow'
+
+  feedback_loops:
+    - from: code-review
+      to: dev-story
+      label: 'fixes'
+    - from: retrospective
+      to: sprint-planning
+      label: 'next epic'
+
+  # Human-authored descriptions for legend (not discoverable from configs)
+  output_descriptions:
+    '@bmm-workflow-status.yaml': 'BMM workflow tracking status'
+    '@product-brief.md': 'Product vision and requirements'
+    '@PRD.md': 'Product requirements document'
+    '@ux-design-specification.md': 'UX design and wireframes'
+    '@architecture.md': 'System architecture and design'
+    '@epics.md': 'Epic and story breakdown'
+    '@impl-readiness-report.md': 'Implementation readiness report'
+    '@sprint-status.yaml': 'Sprint status and planning'
+    '@{epic}-{story}-*.md': 'Story implementation details'
+    '@sprint-change-proposal.md': 'Sprint change proposal'
+    '@tech-spec.md': 'Technical specification'
+```
+
+---
+
+## Output Manifest Structure
+
+The final manifest has four sections:
+
+```yaml
+# ============================================================
+# SECTION 1: METADATA (auto-updated each run)
+# ============================================================
 version: '1.0'
 generated: '<ISO timestamp>'
 source_commit: '<git short hash>'
-bmad_version: '<version from package.json>'
+bmad_version: '<from package.json>'
 
-# Entry point
-entry:
-  id: workflow-init
-  name: /workflow-init
-  outputs:
-    - file: '@bmm-workflow-status.yaml'
+# ============================================================
+# SECTION 2: DOMAIN CONTEXT (copied from prompt)
+# ============================================================
+domain:
+  entry:
+    id: workflow-init
+    directory: 'workflow-status/init'
+    outputs:
+      - file: '@bmm-workflow-status.yaml'
+        description: 'BMM workflow tracking status'
 
-phases:
-  discovery:
-    label: 'PHASE 1: DISCOVERY'
-    directory: '1-analysis'
-    optional: true
-    parallel: true # Activities can run in any order
-    workflows:
-      - id: <workflow-id>
-        name: /<workflow-name>
-        outputs:
-          - file: '@filename.md'
-            description: '...' # Only output files have descriptions (for legend)
+  phases:
+    discovery:
+      label: 'PHASE 1: DISCOVERY'
+      directory: '1-analysis'
+      optional: true
+      parallel: true
+    planning:
+      label: 'PHASE 2: PLANNING'
+      directory: '2-plan-workflows'
+      optional: false
+      parallel: false
+    solutioning:
+      label: 'PHASE 3: SOLUTIONING'
+      directory: '3-solutioning'
+      optional: false
+      parallel: false
+    implementation:
+      label: 'PHASE 4: IMPLEMENTATION'
+      directory: '4-implementation'
+      optional: false
+      parallel: false
+      has_feedback_loops: true
 
-    connections:
-      - from: [brainstorm-project, research, domain-research, document-project]
-        to: product-brief
-        type: converge
+  quick_flow:
+    directory: 'bmad-quick-flow'
+    description: 'Fast-track path for experienced teams'
 
-  planning:
-    label: 'PHASE 2: PLANNING'
-    directory: '2-plan-workflows'
-    optional: false
-    parallel: false
-    workflows: [...]
-
-    decisions:
-      - id: has-ui
-        label: 'Has UI?'
-        after: prd
-        branches:
-          - condition: 'Yes'
-            to: ux-design
-          - condition: 'No'
-            to: architecture
-
-    connections:
-      - from: ux-design
-        to: architecture
-
-  solutioning:
-    label: 'PHASE 3: SOLUTIONING'
-    directory: '3-solutioning'
-    optional: false
-    parallel: false
-    workflows: [...]
-
-    connections:
-      - from: architecture
-        to: create-epics-and-stories
-        type: sequential
-      - from: create-epics-and-stories
-        to: implementation-readiness
-        type: sequential
-
-  implementation:
-    label: 'PHASE 4: IMPLEMENTATION'
-    directory: '4-implementation'
-    optional: false
-    parallel: false
-    workflows: [...]
-
-    connections:
-      - from: sprint-planning
-        to: create-story
-        type: sequential
-      # ... etc
-
-    feedback_loops:
-      - from: code-review
-        to: dev-story
-        label: 'fixes'
-        description: 'Return to dev for fixes'
-      # ... etc
-
-quick_flow:
-  auto_regenerate: false
-  directory: 'bmad-quick-flow'
-  description: 'Fast-track path for experienced teams'
-  workflows: [...]
+# ============================================================
+# SECTION 3: INVENTORY (discovered from source)
+# ============================================================
+inventory:
+  workflows:
+    - id: <workflow-id>
+      phase: <phase_key>
+      name: /<workflow-name>
+      outputs:
+        - '@filename.md' # Just file paths, descriptions in annotations
+      next_steps:
+        - workflow: <target-id>
+          evidence: "line N: '...'"
 
   connections:
-    - from: create-tech-spec
-      to: quick-dev
-      type: sequential
+    - from: <id>
+      to: <id>
+      type: sequential|converge
+      scope: within-phase|cross-phase
 
-cross_phase_connections:
-  - from: entry.workflow-init
-    to: phases.discovery.activities
-    label: 'Main flow'
-    type: entry
-  - from: entry.workflow-init
-    to: quick_flow.create-tech-spec
-    label: 'Quick-flow'
-    type: quick_flow
-  # ... etc
-
-legend:
-  title: 'OUTPUTS'
-  items:
+  legend:
     - file: '@filename.md'
-      description: '...'
-    # ... all output files from all workflows
+      description: '...' # Pulled from annotations.output_descriptions
+
+# ============================================================
+# SECTION 4: ANNOTATIONS (human-maintained)
+# ============================================================
+annotations:
+  decisions:
+    - id: has-ui
+      after: prd
+      label: 'Has UI?'
+      branches:
+        - condition: 'Yes'
+          to: ux-design
+        - condition: 'No'
+          to: architecture
+      reason: '...'
+
+  standalone_workflows:
+    - id: correct-course
+      reason: '...'
+
+  optional_workflows:
+    - id: tech-spec
+      reason: '...'
+
+  feedback_loops:
+    - from: code-review
+      to: dev-story
+      label: 'fixes'
+    # ...
+
+  output_descriptions:
+    '@filename.md': 'Human-authored description for legend'
+    # ...
 ```
 
-### 4. Compare with Previous Manifest (if exists)
-
-If `docs/diagrams/workflow-manifest.yaml` already exists:
-
-1. Load the existing manifest
-2. Compare with the newly generated manifest
-3. Detect changes:
-   - Added workflows
-   - Removed workflows
-   - Changed workflow outputs
-   - Changed output file descriptions (in legend)
-   - Changed connections or dependencies
-   - Changed decision points or feedback loops
-
-4. Categorize changes:
-   - **Quick Flow changes**: Any changes in the `quick_flow` section
-   - **Main workflow changes**: Any changes in `phases` or `cross_phase_connections`
-
-### 5. Decision Point
-
-**If Quick Flow changes detected:**
-
-- **HARD STOP** - Do not proceed
-- Report what changed in detail
-- Ask user: "Quick Flow has changed. What would you like to do?"
-  - Option 1: Update manifest with changes
-  - Option 2: Keep existing manifest
-  - Option 3: Review changes and decide
-
-**If main workflow changes detected:**
-
-- Report what changed
-- Ask user: "Main workflows have changed. Approve updating the manifest?"
-  - If approved: Proceed to write
-  - If rejected: Keep existing manifest
-
-**If no changes detected:**
-
-- Proceed silently to write manifest
-
-### 6. Write Manifest
-
-Write the manifest to `docs/diagrams/workflow-manifest.yaml`
-
-Report summary:
-
-- Number of workflows discovered
-- Number of phases
-- Number of output documents
-- Any changes detected (if comparing)
+---
 
 ## Self-Check
 
 Before finalizing, verify:
 
-**Completeness:**
+### Completeness
 
-- [ ] All workflow directories scanned
-- [ ] All workflow.yaml files read
+- [ ] All phase directories scanned
+- [ ] All subdirectories checked for workflow configs
+- [ ] All workflow.yaml/workflow.md files read
 - [ ] All output files extracted
-- [ ] Version and commit info included
-- [ ] Timestamp is current
+- [ ] Version, commit, timestamp included
 
-**Connections:**
+### Accuracy
 
-- [ ] Within-phase connections defined
-- [ ] Cross-phase connections defined
-- [ ] Decision points defined
-- [ ] Feedback loops defined
-- [ ] Quick-flow paths defined
+- [ ] Only workflows with actual config files included
+- [ ] NO phantom workflows (verify each id maps to real directory)
+- [ ] Output files match what's in configs
+- [ ] Connections derived from actual instruction text
 
-**Accuracy:**
+### Git Validation
 
-- [ ] Workflow names match directory names
-- [ ] Workflows do NOT have description fields (prevents false change detection)
-- [ ] Output file descriptions are clear and concise (appear in legend)
-- [ ] Output files match workflow.yaml patterns
-- [ ] Connections match bmm-workflow.d2
+- [ ] Changes validated against git diff
+- [ ] LLM variance suppressed for non-git-confirmed changes
+- [ ] Evidence recorded for all confirmed changes
 
-**Change Detection (if applicable):**
+### Determinism
 
-- [ ] Previous manifest loaded correctly
-- [ ] All changes detected
-- [ ] Changes categorized correctly
-- [ ] User prompted appropriately
+- [ ] Running twice on same source produces identical output
+- [ ] No description fields that could vary between runs
+- [ ] Manifest anchored to specific git commit
+
+---
+
+## Execution Summary
+
+```
+Phase 1: Rot Check      → Verify structure matches domain context
+Phase 2: Discovery      → Scan source, extract workflows/outputs/connections
+Phase 3: Git Diff       → Compare with old manifest, validate via git
+Phase 4: Human Gate     → Present changes, get approval, write manifest
+```
+
+**Key guarantees:**
+
+1. Only reports workflows that EXIST in source
+2. Changes must be GIT_CONFIRMED or they're suppressed
+3. Domain structure is static; inventory is dynamic
+4. Annotations are preserved unless explicitly removed
+
+---
 
 ## Notes
 
-- This is an **agentic prompt**, not a formal BMAD workflow
+- This is an **agentic prompt** for manifest generation
 - The manifest is the **source of truth** for diagram generation
-- Quick Flow changes require **hard stop** - they're critical
-- Main workflow changes require **user approval** - they're important
-- The manifest should be **version controlled** in git
+- Quick Flow changes require **hard stop** approval
+- Main workflow changes require **user approval**
+- LLM variance is **auto-suppressed** via git validation
