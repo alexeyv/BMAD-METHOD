@@ -4,9 +4,17 @@ This prompt generates a YAML manifest of BMM and core workflows/agents by discov
 
 ---
 
+## ⛔ CRITICAL: Read First
+
+**ONLY OUTPUT**: `docs/diagrams/workflow-manifest.yaml` (create or update)
+
+**FORBIDDEN**: Creating any other files, modifying this prompt, modifying source files, writing "helper" scripts.
+
+---
+
 ## Domain Context (Static Knowledge)
 
-Before executing any phase, absorb this stable structure knowledge. This is your frame of reference - workflows and agents within are DISCOVERED, not assumed.
+Before proceeding with any phase, absorb this stable structure knowledge. This is your frame of reference - workflows and agents within are DISCOVERED, not assumed.
 
 ```yaml
 # Domain Context - Provided knowledge, not discovered
@@ -39,21 +47,62 @@ bmm_structure:
       directory: '1-analysis'
       behavior: parallel # Workflows can run in any order
       optional: true
+      # No strict sequence - workflows can run in parallel
 
     - key: planning
       label: 'PHASE 2: PLANNING'
       directory: '2-plan-workflows'
       behavior: sequential
+      # Workflow sequence (testarch workflows interleave per optional_groups.integration)
+      workflow_sequence:
+        - prd
+        - create-ux-design # conditional: has UI
 
     - key: solutioning
       label: 'PHASE 3: SOLUTIONING'
       directory: '3-solutioning'
       behavior: sequential
+      # Workflow sequence with testarch integration points
+      workflow_sequence:
+        - architecture
+        - create-epics-and-stories
+        # [testarch: framework, ci] <- interleaved here per optional_groups
+        - implementation-readiness
 
     - key: implementation
       label: 'PHASE 4: IMPLEMENTATION'
       directory: '4-implementation'
-      behavior: iterative # Has feedback loops
+      behavior: nested_loops # Has epic loop, story loop, and feedback loops
+      structure:
+        entry: sprint-planning
+        epic_loop:
+          frequency: per-epic
+          pre_story:
+            # [testarch: test-design] <- interleaved here per optional_groups
+            sequence: []
+          story_loop:
+            frequency: per-story
+            sequence:
+              - create-story
+              # [testarch: atdd] <- optional, before dev-story
+              - dev-story
+              # [testarch: automate, test-review, trace] <- optional, after dev-story
+              - code-review
+            feedback_loops:
+              - from: code-review
+                to: dev-story
+                label: fixes
+          post_story:
+            - workflow: retrospective
+              optional: true
+        release_gate:
+          optional: true
+          optional_group: testarch
+          # [testarch: nfr-assess, trace] <- release gate workflows
+        outer_feedback:
+          - from: retrospective
+            to: epic_loop
+            label: next_epic
 
   quick_flow:
     directory: 'bmad-quick-flow'
@@ -71,11 +120,49 @@ bmm_structure:
       - '4-implementation/*'
       - 'bmad-quick-flow/*'
       - 'workflow-status/init'
+      - 'testarch/*' # Optional quality workflows (TEA agent)
     exclude:
-      - 'diagrams/*' # Diagram generation, not BMM phases
-      - 'testarch/*' # Test architecture, separate concern
-      - 'document-project/*' # Utility workflow
+      - 'diagrams/*' # Diagram generation utilities, not BMM phases
+      - 'document-project/*' # Brownfield utility workflow
       - 'generate-project-context/*' # Utility workflow
+
+  # Optional workflow groups that can be filtered for diagram generation
+  optional_groups:
+    testarch:
+      description: |
+        Optional quality superstructure for BMM Method and Enterprise tracks.
+        TEA (Test Architect) is the only multi-phase agent, operating across
+        Phase 3 (solutioning), Phase 4 (implementation), and Release Gate.
+        Quick Flow projects typically skip these workflows.
+      agent: tea
+      directory: 'testarch'
+      applicable_tracks:
+        - bmm-method
+        - enterprise
+      # Integration points define where testarch workflows interleave
+      # with core BMM workflows (used for diagram generation)
+      integration:
+        solutioning:
+          # These run after create-epics-and-stories, before implementation-readiness
+          after: create-epics-and-stories
+          before: implementation-readiness
+          sequence: [framework, ci]
+        implementation:
+          # Per-epic: test-design runs after sprint-planning, before create-story
+          epic_start:
+            after: sprint-planning
+            sequence: [test-design]
+          # Per-story: interleaved with story development cycle
+          story_cycle:
+            - position: before
+              anchor: dev-story
+              workflows: [atdd]
+            - position: after
+              anchor: dev-story
+              workflows: [automate, test-review, trace]
+        release_gate:
+          # Optional gate workflows at end of epic/release
+          workflows: [nfr-assess, trace]
 
   tracking_systems:
     workflow_status:
@@ -261,7 +348,7 @@ Scan `workflow-status/init/`:
 
 ### Step 2.3: Discover Phase Workflows
 
-For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-implementation`):
+For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-implementation`) AND the `testarch/` directory:
 
 1. **List subdirectories** - each is a potential workflow
 2. **For each subdirectory:**
@@ -271,6 +358,8 @@ For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-
      - `id`: directory name
      - `name`: from config `name` field, prefix with `/`
      - `outputs`: extract using the rules below
+     - `has_checklist`: check if `checklist.md` exists in workflow directory
+     - `optional_group`: if workflow is in `testarch/` directory → set to `testarch`
 
 3. **Output Extraction Rules** (in priority order):
 
@@ -334,12 +423,30 @@ For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-
    ```yaml
    - id: <workflow-id>
      module: bmm
-     phase: <phase>
+     phase: <phase> # For phase workflows; testarch workflows use integration points
+     optional_group: <group> # e.g., 'testarch' - for filtering in diagram generation
      name: /<workflow-name>
      agent: <agent-id>
      alternate_agents: [...]
      outputs: [...]
+     has_checklist: true|false # From Step 2.3.2 - enables validate-workflow
      next_steps: [...]
+   ```
+
+   **For testarch workflows**, also include integration metadata from domain context:
+
+   ```yaml
+   - id: <workflow-id>
+     module: bmm
+     optional_group: testarch
+     integration: # From domain.optional_groups.testarch.integration
+       phase: <solutioning|implementation|release_gate>
+       position: <after|before>
+       anchor: <anchor-workflow-id>
+       frequency: <once|per-epic|per-story> # if applicable
+     name: /<workflow-name>
+     agent: tea
+     # ... rest of fields
    ```
 
    Note: `agent_source` is NOT written to manifest - it's only used for Discovery Report output.
@@ -478,20 +585,25 @@ Discovered:
     - bmm Phase 3 (solutioning): N workflows [list ids]
     - bmm Phase 4 (implementation): N workflows [list ids]
     - bmm Quick Flow: N workflows [list ids]
+    - bmm TestArch (optional_group): N workflows [list ids]
 
-  Total: N agents, M workflows, P output files
+  Total: N agents, M workflows (including N testarch), P output files
 
 Agent Assignments:
   ✓ <workflow>: agent=<agent> (source: path-file)
   ✓ <workflow>: agent=<agent> (source: agent-file) ⚠️ FALLBACK
   ... (list all workflows with agent assignments)
 
+TestArch Integration:
+  ✓ <testarch-workflow>: integrates at <phase>.<position> anchor=<anchor-workflow>
+  ... (list all testarch workflows with integration points)
+
 Warnings:
   ⚠️ <workflow>: agent sourced from fallback (agent file), not primary (path file)
   ⚠️ Agent '<agent>' claims '<workflow>' but workflow not found in inventory
   ... (list all warnings from Step 2.8)
 
-Summary: N workflows assigned, X fallbacks, Y inconsistencies
+Summary: N workflows assigned, X fallbacks, Y inconsistencies, Z testarch workflows
 ```
 
 ---
@@ -739,27 +851,53 @@ domain:
       label: 'PHASE 1: DISCOVERY'
       directory: '1-analysis'
       optional: true
-      parallel: true
+      behavior: parallel
     planning:
       label: 'PHASE 2: PLANNING'
       directory: '2-plan-workflows'
-      optional: false
-      parallel: false
+      behavior: sequential
+      workflow_sequence: [prd, create-ux-design]
     solutioning:
       label: 'PHASE 3: SOLUTIONING'
       directory: '3-solutioning'
-      optional: false
-      parallel: false
+      behavior: sequential
+      workflow_sequence: [architecture, create-epics-and-stories, implementation-readiness]
     implementation:
       label: 'PHASE 4: IMPLEMENTATION'
       directory: '4-implementation'
-      optional: false
-      parallel: false
-      has_feedback_loops: true
+      behavior: nested_loops
+      structure:
+        entry: sprint-planning
+        epic_loop:
+          story_loop:
+            sequence: [create-story, dev-story, code-review]
+            feedback_loops:
+              - { from: code-review, to: dev-story, label: fixes }
+          post_story: [retrospective]
+        outer_feedback:
+          - { from: retrospective, to: epic_loop, label: next_epic }
 
   quick_flow:
     directory: 'bmad-quick-flow'
     description: 'Fast-track path for experienced teams'
+
+  optional_groups:
+    testarch:
+      description: 'Optional quality workflows (TEA agent) for BMM Method and Enterprise tracks'
+      agent: tea
+      directory: 'testarch'
+      integration:
+        solutioning:
+          after: create-epics-and-stories
+          before: implementation-readiness
+          sequence: [framework, ci]
+        implementation:
+          epic_start: { after: sprint-planning, sequence: [test-design] }
+          story_cycle:
+            - { position: before, anchor: dev-story, workflows: [atdd] }
+            - { position: after, anchor: dev-story, workflows: [automate, test-review, trace] }
+        release_gate:
+          workflows: [nfr-assess, trace]
 
   tracking_systems:
     workflow_status:
@@ -802,18 +940,35 @@ inventory:
 
   # Workflows (discovered from Steps 2.3, 2.4, 2.4a)
   workflows:
-    # BMM workflow example (has module + phase)
+    # BMM phase workflow example
     - id: <workflow-id>
       module: bmm
-      phase: <phase_key> # BMM only: discovery|planning|solutioning|implementation|quick_flow
+      phase: <phase_key> # discovery|planning|solutioning|implementation|quick_flow
       name: /<workflow-name>
       agent: <agent-id> # Primary agent (or null if agentless)
       alternate_agents: [] # Other agents that can run this workflow
       outputs:
         - '@filename.md' # Just file paths, descriptions in annotations
+      has_checklist: true|false # Enables validate-workflow capability
       next_steps:
         - workflow: <target-id>
           evidence: "line N: '...'"
+
+    # TestArch workflow example (optional_group with integration points)
+    - id: <workflow-id>
+      module: bmm
+      optional_group: testarch # For filtering in diagram generation
+      integration: # Where this workflow fits in the main flow
+        phase: solutioning|implementation|release_gate
+        position: after|before
+        anchor: <anchor-workflow-id>
+        frequency: once|per-epic|per-story # if applicable
+      name: /<workflow-name>
+      agent: tea
+      alternate_agents: []
+      outputs: [...]
+      has_checklist: true|false
+      next_steps: [...]
 
     # Core workflow example (has module, no phase)
     - id: <workflow-id>
@@ -822,6 +977,7 @@ inventory:
       agent: <agent-id>
       alternate_agents: []
       outputs: []
+      has_checklist: true|false
       next_steps: []
     # ... all discovered workflows
 
@@ -884,9 +1040,11 @@ Before finalizing, verify:
 - [ ] Core module directories scanned (`src/core/agents/`, `src/core/workflows/`)
 - [ ] BMM module directories scanned (`src/modules/bmm/agents/`, `src/modules/bmm/workflows/`)
 - [ ] All BMM phase directories scanned
+- [ ] TestArch directory scanned (`src/modules/bmm/workflows/testarch/`)
 - [ ] All subdirectories checked for workflow configs
 - [ ] All workflow.yaml/workflow.md files read
 - [ ] All output files extracted
+- [ ] All checklist.md files detected for `has_checklist` field
 - [ ] Version, commit, timestamp included
 - [ ] All agent files scanned (`*.agent.yaml`) from both modules
 - [ ] All path files scanned for agent assignments
@@ -901,7 +1059,9 @@ Before finalizing, verify:
 - [ ] Agent IDs extracted from filenames, not content
 - [ ] All agents have correct `module` field (core or bmm)
 - [ ] All workflows have correct `module` field
-- [ ] BMM workflows have `phase` field, core workflows do not
+- [ ] BMM phase workflows have `phase` field, core workflows do not
+- [ ] TestArch workflows have `optional_group: testarch` and `integration` fields
+- [ ] All workflows have `has_checklist` field matching actual checklist.md presence
 
 ### Agent Validation
 
@@ -925,9 +1085,16 @@ Before finalizing, verify:
 - [ ] No description fields that could vary between runs
 - [ ] Manifest anchored to specific git commit
 
+### File Discipline
+
+- [ ] **ONLY `workflow-manifest.yaml` was created or modified**
+- [ ] No helper scripts were created
+- [ ] No other files were touched
+- [ ] This prompt file (`generate-manifest.md`) was NOT modified
+
 ---
 
-## Execution Summary
+## Summary of Phases
 
 ```
 Phase 1: Rot Check      → Verify structure matches domain context

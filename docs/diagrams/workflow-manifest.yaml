@@ -1,7 +1,14 @@
+# ============================================================
+# SECTION 1: METADATA (auto-updated each run)
+# ============================================================
 version: "1.0"
-generated: "2025-12-04T14:04:28.996Z"
-source_commit: 82b4a844
-bmad_version: 6.0.0-alpha.13
+generated: "2025-12-11T13:15:40Z"
+source_commit: 2275c052
+bmad_version: 6.0.0-alpha.16
+
+# ============================================================
+# SECTION 2: DOMAIN CONTEXT (copied from prompt)
+# ============================================================
 domain:
   entry:
     id: workflow-init
@@ -14,26 +21,93 @@ domain:
       label: "PHASE 1: DISCOVERY"
       directory: 1-analysis
       optional: true
-      parallel: true
+      behavior: parallel
     planning:
       label: "PHASE 2: PLANNING"
       directory: 2-plan-workflows
-      optional: false
-      parallel: false
+      behavior: sequential
+      workflow_sequence:
+        - prd
+        - create-ux-design
     solutioning:
       label: "PHASE 3: SOLUTIONING"
       directory: 3-solutioning
-      optional: false
-      parallel: false
+      behavior: sequential
+      workflow_sequence:
+        - architecture
+        - create-epics-and-stories
+        - implementation-readiness
     implementation:
       label: "PHASE 4: IMPLEMENTATION"
       directory: 4-implementation
-      optional: false
-      parallel: false
-      has_feedback_loops: true
+      behavior: nested_loops
+      structure:
+        entry: sprint-planning
+        epic_loop:
+          frequency: per-epic
+          pre_story:
+            sequence: []
+          story_loop:
+            frequency: per-story
+            sequence:
+              - create-story
+              - dev-story
+              - code-review
+            feedback_loops:
+              - from: code-review
+                to: dev-story
+                label: fixes
+          post_story:
+            - workflow: retrospective
+              optional: true
+        release_gate:
+          optional: true
+          optional_group: testarch
+        outer_feedback:
+          - from: retrospective
+            to: epic_loop
+            label: next_epic
   quick_flow:
     directory: bmad-quick-flow
-    description: Fast-track path for experienced teams
+    description: Fast-track path bypassing full discovery/planning
+  optional_groups:
+    testarch:
+      description: >-
+        Optional quality superstructure for BMM Method and Enterprise tracks. TEA (Test Architect) is the only
+        multi-phase agent, operating across Phase 3 (solutioning), Phase 4 (implementation), and Release Gate. Quick
+        Flow projects typically skip these workflows.
+      agent: tea
+      directory: testarch
+      applicable_tracks:
+        - bmm-method
+        - enterprise
+      integration:
+        solutioning:
+          after: create-epics-and-stories
+          before: implementation-readiness
+          sequence:
+            - framework
+            - ci
+        implementation:
+          epic_start:
+            after: sprint-planning
+            sequence:
+              - test-design
+          story_cycle:
+            - position: before
+              anchor: dev-story
+              workflows:
+                - atdd
+            - position: after
+              anchor: dev-story
+              workflows:
+                - automate
+                - test-review
+                - trace
+        release_gate:
+          workflows:
+            - nfr-assess
+            - trace
   tracking_systems:
     workflow_status:
       file: "@bmm-workflow-status.yaml"
@@ -75,8 +149,17 @@ domain:
       to: sprint_status
       at_workflow: sprint-planning
       reason: Implementation is iterative per-story; requires different tracking model
+
+# ============================================================
+# SECTION 3: INVENTORY (discovered from source)
+# ============================================================
 inventory:
   agents:
+    - id: bmad-master
+      module: core
+      name: BMad Master
+      title: BMad Master Executor, Knowledge Custodian, and Workflow Orchestrator
+      icon: 🧙
     - id: analyst
       module: bmm
       name: Mary
@@ -122,176 +205,23 @@ inventory:
       name: Sally
       title: UX Designer
       icon: 🎨
-    - id: bmad-master
-      module: core
-      name: BMad Master
-      title: BMad Master Executor, Knowledge Custodian, and Workflow Orchestrator
-      icon: 🧙
   workflows:
-    - id: product-brief
-      module: bmm
-      name: /product-brief
-      agent: analyst
-      alternate_agents: []
-      outputs:
-        - "@product-brief.md"
-      next_steps: []
-      phase: discovery
-    - id: research
-      module: bmm
-      name: /research
-      agent: analyst
-      alternate_agents: []
-      outputs: []
-      next_steps: []
-      phase: discovery
-    - id: create-ux-design
-      module: bmm
-      name: /create-ux-design
-      agent: ux-designer
-      alternate_agents: []
-      outputs:
-        - "@ux-design-specification.md"
-        - "@ux-color-themes.html"
-        - "@ux-design-directions.html"
-      next_steps: []
-      phase: planning
-    - id: prd
-      module: bmm
-      name: /prd
-      agent: pm
-      alternate_agents: []
-      outputs:
-        - "@PRD.md"
-      next_steps: []
-      phase: planning
-    - id: architecture
-      module: bmm
-      name: /architecture
-      agent: architect
-      alternate_agents: []
-      outputs:
-        - "@architecture.md"
-      next_steps: []
-      phase: solutioning
-    - id: create-epics-and-stories
-      module: bmm
-      name: /create-epics-and-stories
-      agent: pm
-      alternate_agents: []
-      outputs:
-        - "@epics.md"
-      next_steps: []
-      phase: solutioning
-    - id: implementation-readiness
-      module: bmm
-      name: /implementation-readiness
-      agent: architect
-      alternate_agents:
-        - pm
-      outputs:
-        - "@impl-readiness-report.md"
-      next_steps: []
-      phase: solutioning
-    - id: code-review
-      module: bmm
-      name: /code-review
-      agent: dev
-      alternate_agents:
-        - quick-flow-solo-dev
-      outputs: []
-      next_steps: []
-      phase: implementation
-    - id: correct-course
-      module: bmm
-      name: /correct-course
-      agent: pm
-      alternate_agents:
-        - sm
-      outputs:
-        - "@sprint-change-proposal-.md"
-      next_steps: []
-      phase: implementation
-    - id: create-story
-      module: bmm
-      name: /create-story
-      agent: sm
-      alternate_agents: []
-      outputs:
-        - "@{epic}-{story}-*.md"
-      next_steps: []
-      phase: implementation
-    - id: dev-story
-      module: bmm
-      name: /dev-story
-      agent: dev
-      alternate_agents: []
-      outputs: []
-      next_steps: []
-      phase: implementation
-    - id: retrospective
-      module: bmm
-      name: /retrospective
-      agent: sm
-      alternate_agents: []
-      outputs: []
-      next_steps: []
-      phase: implementation
-    - id: sprint-planning
-      module: bmm
-      name: /sprint-planning
-      agent: sm
-      alternate_agents: []
-      outputs:
-        - "@sprint-status.yaml"
-      next_steps: []
-      phase: implementation
-    - id: sprint-status
-      module: bmm
-      name: /sprint-status
-      agent: null
-      alternate_agents: []
-      outputs: []
-      next_steps: []
-      phase: implementation
-    - id: create-tech-spec
-      module: bmm
-      name: /create-tech-spec
-      agent: quick-flow-solo-dev
-      alternate_agents: []
-      outputs:
-        - "@tech-spec.md"
-      next_steps: []
-      phase: quick_flow
-    - id: quick-dev
-      module: bmm
-      name: /quick-dev
-      agent: quick-flow-solo-dev
-      alternate_agents: []
-      outputs: []
-      next_steps: []
-      phase: quick_flow
-    - id: workflow-init
-      module: bmm
-      name: /workflow-init
-      agent: null
-      alternate_agents: []
-      outputs:
-        - "@bmm-workflow-status.yaml"
-      next_steps: []
     - id: brainstorming
       module: core
-      name: /brainstorming
+      name: /brainstorming-session
+      outputs: []
+      has_checklist: false
+      next_steps: []
       agent: analyst
       alternate_agents: []
-      outputs: []
-      next_steps: []
     - id: party-mode
       module: core
       name: /party-mode
+      outputs: []
+      has_checklist: false
+      next_steps: []
       agent: bmad-master
       alternate_agents:
-        - analyst
         - architect
         - pm
         - quick-flow-solo-dev
@@ -299,34 +229,333 @@ inventory:
         - tea
         - tech-writer
         - ux-designer
-      outputs: []
+    - id: product-brief
+      module: bmm
+      phase: discovery
+      name: /create-product-brief
+      outputs:
+        - "@product-brief.md"
+      has_checklist: false
       next_steps: []
+      agent: analyst
+      alternate_agents: []
+    - id: research
+      module: bmm
+      phase: discovery
+      name: /research
+      outputs: []
+      has_checklist: false
+      next_steps: []
+      agent: analyst
+      alternate_agents: []
+    - id: prd
+      module: bmm
+      phase: planning
+      name: /create-prd
+      outputs:
+        - "@PRD.md"
+      has_checklist: false
+      next_steps: []
+      agent: pm
+      alternate_agents: []
+    - id: create-ux-design
+      module: bmm
+      phase: planning
+      name: /create-ux-design
+      outputs:
+        - "@ux-design-specification.md"
+        - "@ux-color-themes.html"
+        - "@ux-design-directions.html"
+      has_checklist: false
+      next_steps: []
+      agent: ux-designer
+      alternate_agents: []
+    - id: architecture
+      module: bmm
+      phase: solutioning
+      name: /create-architecture
+      outputs:
+        - "@architecture.md"
+      has_checklist: false
+      next_steps: []
+      agent: architect
+      alternate_agents: []
+    - id: create-epics-and-stories
+      module: bmm
+      phase: solutioning
+      name: /create-epics-stories
+      outputs:
+        - "@epics.md"
+      has_checklist: false
+      next_steps: []
+      agent: pm
+      alternate_agents: []
+    - id: implementation-readiness
+      module: bmm
+      phase: solutioning
+      name: /check-implementation-readiness
+      outputs:
+        - "@impl-readiness-report.md"
+      has_checklist: false
+      next_steps: []
+      agent: architect
+      alternate_agents:
+        - pm
+    - id: sprint-planning
+      module: bmm
+      phase: implementation
+      name: /sprint-planning
+      outputs:
+        - "@sprint-status.yaml"
+      has_checklist: true
+      next_steps: []
+      agent: sm
+      alternate_agents: []
+    - id: create-story
+      module: bmm
+      phase: implementation
+      name: /create-story
+      outputs:
+        - "@{epic}-{story}-*.md"
+      has_checklist: true
+      next_steps: []
+      agent: sm
+      alternate_agents: []
+    - id: dev-story
+      module: bmm
+      phase: implementation
+      name: /dev-story
+      outputs: []
+      has_checklist: true
+      next_steps: []
+      agent: dev
+      alternate_agents: []
+    - id: code-review
+      module: bmm
+      phase: implementation
+      name: /code-review
+      outputs: []
+      has_checklist: true
+      next_steps: []
+      agent: dev
+      alternate_agents:
+        - quick-flow-solo-dev
+    - id: retrospective
+      module: bmm
+      phase: implementation
+      name: /retrospective
+      outputs: []
+      has_checklist: false
+      next_steps: []
+      agent: sm
+      alternate_agents: []
+    - id: correct-course
+      module: bmm
+      phase: implementation
+      name: /correct-course
+      outputs:
+        - "@sprint-change-proposal.md"
+      has_checklist: true
+      next_steps: []
+      agent: pm
+      alternate_agents:
+        - sm
+    - id: create-tech-spec
+      module: bmm
+      phase: quick_flow
+      name: /create-tech-spec
+      outputs:
+        - "@tech-spec.md"
+      has_checklist: false
+      next_steps: []
+      agent: quick-flow-solo-dev
+      alternate_agents: []
+    - id: quick-dev
+      module: bmm
+      phase: quick_flow
+      name: /quick-dev
+      outputs: []
+      has_checklist: true
+      next_steps: []
+      agent: quick-flow-solo-dev
+      alternate_agents: []
+    - id: framework
+      module: bmm
+      optional_group: testarch
+      name: /testarch-framework
+      outputs:
+        - "tests/README.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: solutioning
+        position: after
+        anchor: create-epics-and-stories
+        frequency: once
+    - id: ci
+      module: bmm
+      optional_group: testarch
+      name: /testarch-ci
+      outputs:
+        - ".github/workflows/test.yml"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: solutioning
+        position: after
+        anchor: create-epics-and-stories
+        frequency: once
+    - id: test-design
+      module: bmm
+      optional_group: testarch
+      name: /testarch-test-design
+      outputs:
+        - "test-design-epic-{epic_num}.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: implementation
+        position: after
+        anchor: sprint-planning
+        frequency: per-epic
+    - id: atdd
+      module: bmm
+      optional_group: testarch
+      name: /testarch-atdd
+      outputs:
+        - "atdd-checklist-{story_id}.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: implementation
+        position: before
+        anchor: dev-story
+        frequency: per-story
+    - id: automate
+      module: bmm
+      optional_group: testarch
+      name: /testarch-automate
+      outputs:
+        - "automation-summary.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: implementation
+        position: after
+        anchor: dev-story
+        frequency: per-story
+    - id: test-review
+      module: bmm
+      optional_group: testarch
+      name: /testarch-test-review
+      outputs:
+        - "test-review.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: implementation
+        position: after
+        anchor: dev-story
+        frequency: per-story
+    - id: trace
+      module: bmm
+      optional_group: testarch
+      name: /testarch-trace
+      outputs:
+        - "traceability-matrix.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: implementation
+        position: after
+        anchor: dev-story
+        frequency: per-story
+    - id: nfr-assess
+      module: bmm
+      optional_group: testarch
+      name: /testarch-nfr
+      outputs:
+        - "nfr-assessment.md"
+      has_checklist: true
+      next_steps: []
+      agent: tea
+      alternate_agents: []
+      integration:
+        phase: release_gate
+        position: after
+        anchor: null
+        frequency: per-release
+    - id: workflow-init
+      module: bmm
+      name: /workflow-init
+      outputs:
+        - "@bmm-workflow-status.yaml"
+      has_checklist: false
+      next_steps: []
+      agent: null
+      alternate_agents: []
   connections: []
   legend:
+    - file: "@bmm-workflow-status.yaml"
+      description: BMM workflow tracking status
+    - file: "@product-brief.md"
+      description: Product vision and requirements
     - file: "@PRD.md"
       description: Product requirements document
+    - file: "@ux-design-specification.md"
+      description: UX design and wireframes
+    - file: "@ux-color-themes.html"
+      description: Color theme exploration
+    - file: "@ux-design-directions.html"
+      description: Visual design directions
     - file: "@architecture.md"
       description: System architecture and design
     - file: "@epics.md"
       description: Epic and story breakdown
     - file: "@impl-readiness-report.md"
       description: Implementation readiness report
-    - file: "@product-brief.md"
-      description: Product vision and requirements
-    - file: "@sprint-change-proposal-.md"
-      description: ""
     - file: "@sprint-status.yaml"
       description: Sprint status and planning
-    - file: "@tech-spec.md"
-      description: Technical specification
-    - file: "@ux-color-themes.html"
-      description: Color theme exploration
-    - file: "@ux-design-directions.html"
-      description: Visual design directions
-    - file: "@ux-design-specification.md"
-      description: UX design and wireframes
     - file: "@{epic}-{story}-*.md"
       description: Story implementation details
+    - file: "@sprint-change-proposal.md"
+      description: Sprint change proposal
+    - file: "@tech-spec.md"
+      description: Technical specification
+    - file: "tests/README.md"
+      description: Test framework documentation
+    - file: ".github/workflows/test.yml"
+      description: CI/CD test pipeline configuration
+    - file: "test-design-epic-{epic_num}.md"
+      description: Epic-level test design document
+    - file: "atdd-checklist-{story_id}.md"
+      description: ATDD test checklist for story
+    - file: "automation-summary.md"
+      description: Test automation coverage summary
+    - file: "test-review.md"
+      description: Test quality review report
+    - file: "traceability-matrix.md"
+      description: Requirements-to-tests traceability matrix
+    - file: "nfr-assessment.md"
+      description: Non-functional requirements assessment
+
+# ============================================================
+# SECTION 4: ANNOTATIONS (human-maintained)
+# ============================================================
 annotations:
   decisions:
     - id: has-ui
@@ -336,7 +565,7 @@ annotations:
         - condition: "Yes"
           to: create-ux-design
         - condition: "No"
-          to: create-architecture
+          to: architecture
       reason: UI decision affects whether UX design phase is needed
   standalone_workflows:
     - id: correct-course
@@ -365,6 +594,15 @@ annotations:
     "@{epic}-{story}-*.md": Story implementation details
     "@sprint-change-proposal.md": Sprint change proposal
     "@tech-spec.md": Technical specification
+    # TestArch output descriptions
+    "tests/README.md": Test framework documentation
+    ".github/workflows/test.yml": CI/CD test pipeline configuration
+    "test-design-epic-{epic_num}.md": Epic-level test design document
+    "atdd-checklist-{story_id}.md": ATDD test checklist for story
+    "automation-summary.md": Test automation coverage summary
+    "test-review.md": Test quality review report
+    "traceability-matrix.md": Requirements-to-tests traceability matrix
+    "nfr-assessment.md": Non-functional requirements assessment
   agent_descriptions:
     bmad-master: Master task executor and workflow orchestrator
     analyst: Conducts discovery research, competitive analysis, and product briefs
