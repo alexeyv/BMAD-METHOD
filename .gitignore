@@ -66,6 +66,7 @@ src/modules/bmgd/sub-modules/
 z*/
 
 .bmad
+_bmad
 .claude
 .codex
 .github/chatmodes
