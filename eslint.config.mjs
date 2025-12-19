@@ -18,6 +18,7 @@ export default [
       'test/fixtures/**/*.yaml',
       '_bmad/**',
       '_bmad*/**',
+      '.bmad/**',
       // Gitignored patterns
       'z*/**', // z-samples, z1, z2, etc.
       '.claude/**',

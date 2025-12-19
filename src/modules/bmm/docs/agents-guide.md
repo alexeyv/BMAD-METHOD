@@ -781,7 +781,7 @@ After modifying customization files, you must regenerate the agent manifest and 
 
 ```bash
 # Run the installer to apply customizations
-npx bmad-method install
+npx bmad-method
 
 # The installer will:
 # 1. Read all customization files

@@ -131,7 +131,7 @@ Party mode uses agents from `_bmad/[module]/agents/*.md` - these already include
 **To customize agents for party mode:**
 
 1. Create customization file: `_bmad/_config/agents/bmm-pm.customize.yaml`
-2. Run `npx bmad-method install` to rebuild agents
+2. Run `npx bmad-method` to rebuild agents
 3. Customizations now active in party mode
 
 Example customization:
@@ -209,7 +209,7 @@ BMad Master will summarize and redirect, or you can make a decision and move on.
 Make your topic more specific - BMad Master picks 2-3 agents based on relevance.
 
 **Agents not using customizations?**
-Make sure you ran `npx bmad-method install` after creating customization files.
+Make sure you ran `npx bmad-method` after creating customization files.
 
 ---
 

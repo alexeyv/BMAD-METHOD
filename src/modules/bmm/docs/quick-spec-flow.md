@@ -471,7 +471,7 @@ Start with Quick Flow, but switch to BMad Method when:
 
 ### Prerequisites
 
-- BMad Method installed (`npx bmad-method install`)
+- BMad Method installed (`npx bmad-method`)
 - Project directory with code (or empty for greenfield)
 
 ### Quick Start Commands

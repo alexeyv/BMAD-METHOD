@@ -167,7 +167,7 @@ npm install
 ### 2. Run Installer on Your v4 Project
 
 ```bash
-npx bmad-method install
+npx bmad-method
 ```
 
 **Enter the full path to your v4 project** when prompted.

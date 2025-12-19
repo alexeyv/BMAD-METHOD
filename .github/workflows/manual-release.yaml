@@ -123,7 +123,7 @@ jobs:
           ## 📦 Installation
 
           ```bash
-          npx bmad-method install
+          npx bmad-method
           ```
 
           **Full Changelog**: https://github.com/bmad-code-org/BMAD-METHOD/compare/${{ steps.version.outputs.previous_tag }}...v${{ steps.version.outputs.new_version }}

@@ -450,66 +450,6 @@ class ModuleManager {
   }
 
   /**
-   * Update an existing module
-   * @param {string} moduleName - Name of the module to update
-   * @param {string} bmadDir - Target bmad directory
-   * @param {boolean} force - Force update (overwrite modifications)
-   */
-  async update(moduleName, bmadDir, force = false) {
-    const sourcePath = await this.findModuleSource(moduleName);
-    const targetPath = path.join(bmadDir, moduleName);
-
-    // Check if source module exists
-    if (!sourcePath) {
-      throw new Error(`Module '${moduleName}' not found in any source location`);
-    }
-
-    // Check if module is installed
-    if (!(await fs.pathExists(targetPath))) {
-      throw new Error(`Module '${moduleName}' is not installed`);
-    }
-
-    if (force) {
-      // Force update - remove and reinstall
-      await fs.remove(targetPath);
-      return await this.install(moduleName, bmadDir);
-    } else {
-      // Selective update - preserve user modifications
-      await this.syncModule(sourcePath, targetPath);
-
-      // Recompile agents (#1133)
-      await this.compileModuleAgents(sourcePath, targetPath, moduleName, bmadDir, options.installer);
-      await this.processAgentFiles(targetPath, moduleName);
-    }
-
-    return {
-      success: true,
-      module: moduleName,
-      path: targetPath,
-    };
-  }
-
-  /**
-   * Remove a module
-   * @param {string} moduleName - Name of the module to remove
-   * @param {string} bmadDir - Target bmad directory
-   */
-  async remove(moduleName, bmadDir) {
-    const targetPath = path.join(bmadDir, moduleName);
-
-    if (!(await fs.pathExists(targetPath))) {
-      throw new Error(`Module '${moduleName}' is not installed`);
-    }
-
-    await fs.remove(targetPath);
-
-    return {
-      success: true,
-      module: moduleName,
-    };
-  }
-
-  /**
    * Check if a module is installed
    * @param {string} moduleName - Name of the module
    * @param {string} bmadDir - Target bmad directory

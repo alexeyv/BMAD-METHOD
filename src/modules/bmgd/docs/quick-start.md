@@ -19,15 +19,10 @@ Before starting with BMGD, ensure you have:
 BMGD is a custom module that extends BMM. Install it using the BMAD installer:
 
 ```bash
-# During installation, select BMGD when prompted for custom modules
-npx bmad-cli install
+npx bmad-method
 ```
 
-Or add to an existing installation:
-
-```bash
-npx bmad-cli install --add-module bmgd
-```
+During installation, select BMGD when prompted for modules. For existing installations, run the installer again and select BMGD to add it.
 
 ---
 

@@ -81,10 +81,10 @@ With **BMad Builder**, you can architect both simple agents and vastly complex d
 
 ```bash
 # Install v6 Alpha (recommended)
-npx bmad-method@alpha install
+npx bmad-method@alpha
 
 # Or stable v4 for production
-npx bmad-method install
+npx bmad-method
 ```
 
 ### 2. Initialize Your Project

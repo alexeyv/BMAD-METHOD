@@ -13,13 +13,7 @@ default_selected: true
 Then run:
 
 ```bash
-npx bmad-method install
-```
-
-Or if you have bmad-cli installed globally:
-
-```bash
-bmad install
+npx bmad-method
 ```
 
 ## About This Agent

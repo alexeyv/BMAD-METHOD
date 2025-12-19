@@ -443,7 +443,7 @@ Team C (2 devs): Analytics feature (3 epics)
 ```bash
 git init bmm-config
 cd bmm-config
-npx bmad-method install
+npx bmad-method
 # Customize for team standards
 git commit -m "Team BMM config"
 git push origin main

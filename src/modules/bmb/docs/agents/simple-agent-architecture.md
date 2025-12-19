@@ -226,8 +226,7 @@ echo "code: my-agent
 name: My Agent
 default_selected: true" > custom.yaml
 
-npx bmad-method install
-# or: bmad install
+npx bmad-method
 ```
 
 The installer:
