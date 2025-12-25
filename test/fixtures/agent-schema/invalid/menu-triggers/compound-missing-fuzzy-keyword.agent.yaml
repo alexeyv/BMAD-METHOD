@@ -1,0 +1,24 @@
+# Test: Compound trigger missing "fuzzy match on" keyword
+# Expected: FAIL
+# Error code: custom
+# Error path: agent.menu[0].trigger
+# Error message: agent.menu[].trigger compound format error: invalid compound trigger format
+
+agent:
+  metadata:
+    id: compound-missing-fuzzy-keyword
+    name: Missing Fuzzy Keyword
+    title: Missing Fuzzy Keyword Test
+    icon: 🧪
+
+  persona:
+    role: Test agent
+    identity: Test identity
+    communication_style: Test style
+    principles:
+      - Test principle
+
+  menu:
+    - trigger: TS or tech-spec
+      description: Must include "fuzzy match on" - partial compound format not allowed
+      action: test

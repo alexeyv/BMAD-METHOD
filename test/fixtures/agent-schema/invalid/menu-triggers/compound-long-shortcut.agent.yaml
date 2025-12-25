@@ -1,0 +1,24 @@
+# Test: Compound trigger with too-long shortcut (4+ chars)
+# Expected: FAIL
+# Error code: custom
+# Error path: agent.menu[0].trigger
+# Error message: agent.menu[].trigger compound format error: invalid compound trigger format
+
+agent:
+  metadata:
+    id: compound-long-shortcut
+    name: Long Shortcut
+    title: Long Shortcut Test
+    icon: 🧪
+
+  persona:
+    role: Test agent
+    identity: Test identity
+    communication_style: Test style
+    principles:
+      - Test principle
+
+  menu:
+    - trigger: TECH or fuzzy match on tech-spec
+      description: Shortcut must be 1-3 uppercase letters, not 4+
+      action: test
