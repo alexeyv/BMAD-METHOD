@@ -21,7 +21,8 @@ const archiver = require('archiver');
 const PROJECT_ROOT = path.dirname(__dirname);
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 
-const SITE_URL = process.env.SITE_URL || 'https://bmad-code-org.github.io/BMAD-METHOD';
+// For local builds, use localhost. Production URL set via SITE_URL env var in CI.
+const SITE_URL = process.env.SITE_URL || 'http://localhost:4321';
 const REPO_URL = 'https://github.com/bmad-code-org/BMAD-METHOD';
 
 const LLM_MAX_CHARS = 600_000;
@@ -108,13 +109,53 @@ function buildAstroSite() {
   runAstroBuild();
   copyArtifactsToSite(artifactsDir, siteDir);
 
-  // No longer needed: Inject AI agents banner into every HTML page
-  // injectAgentBanner(siteDir);
+  // Verify all links in built site
+  verifyBuiltLinks(siteDir);
 
   console.log();
   console.log(`  \u001B[32m✓\u001B[0m Astro build complete`);
 
   return siteDir;
+}
+
+/**
+ * Verify all internal links in the built site using lychee.
+ * Starts a local server and crawls the site.
+ */
+function verifyBuiltLinks(siteDir) {
+  console.log('  → Verifying links in built site...');
+
+  const { spawn } = require('node:child_process');
+  const url = new URL(SITE_URL);
+  const port = url.port || '4321';
+
+  // Start local server
+  const serverProcess = spawn('npx', ['serve', siteDir, '-l', port, '--single'], {
+    cwd: PROJECT_ROOT,
+    stdio: 'pipe',
+    detached: true,
+  });
+
+  // Wait for server to start
+  execSync('sleep 2');
+
+  try {
+    execSync(`lychee 'http://localhost:${port}/' --no-progress`, {
+      cwd: PROJECT_ROOT,
+      stdio: 'inherit',
+    });
+    console.log(`  \u001B[32m✓\u001B[0m Link verification passed`);
+  } catch {
+    console.error(`\n  \u001B[31m✗\u001B[0m Link verification failed - fix broken links before deploying\n`);
+    process.kill(-serverProcess.pid);
+    process.exit(1);
+  } finally {
+    try {
+      process.kill(-serverProcess.pid);
+    } catch {
+      // Server already stopped
+    }
+  }
 }
 
 // =============================================================================
@@ -330,12 +371,17 @@ async function generatePromptsBundle(downloadsDir) {
  */
 function runAstroBuild() {
   console.log('  → Running astro build...');
+  // Extract base path from SITE_URL for remark plugin
+  const url = new URL(SITE_URL);
+  const basePath = url.pathname.replace(/\/$/, ''); // Strip trailing slash
+
   execSync('npx astro build --root website', {
     cwd: PROJECT_ROOT,
     stdio: 'inherit',
     env: {
       ...process.env,
       SITE_URL,
+      BASE_PATH: basePath,
       NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --disable-warning=MODULE_TYPELESS_PACKAGE_JSON`.trim(),
     },
   });

@@ -2,11 +2,15 @@
  * Remark plugin to transform relative markdown links to absolute paths
  *
  * Uses the source file's path to resolve relative links correctly.
+ * Prepends base path from import.meta.env.BASE_URL for proper deployment.
  * Works with Astro's build.format: 'directory' setting.
  */
 
 import { visit } from 'unist-util-visit';
 import path from 'path';
+
+// Get base path from environment, strip trailing slash for concatenation
+const basePath = (process.env.BASE_PATH || '').replace(/\/$/, '');
 
 export default function remarkMarkdownLinks() {
   return (tree, file) => {
@@ -14,7 +18,7 @@ export default function remarkMarkdownLinks() {
 
     // Debug log
     if (!remarkMarkdownLinks._logged) {
-      console.log('[remark-markdown-links] Plugin running, file:', filePath || 'NO PATH');
+      console.log('[remark-markdown-links] Plugin running, basePath:', basePath || '(none)');
       remarkMarkdownLinks._logged = true;
     }
 
@@ -55,7 +59,8 @@ export default function remarkMarkdownLinks() {
         resolved = '/' + resolved;
       }
 
-      node.url = resolved + suffix;
+      // Prepend base path for deployment
+      node.url = basePath + resolved + suffix;
     });
   };
 }
