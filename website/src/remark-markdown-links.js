@@ -1,9 +1,9 @@
 /**
- * Remark plugin to transform relative markdown links to absolute paths
+ * Remark plugin to transform markdown links for proper deployment
  *
- * Uses the source file's path to resolve relative links correctly.
- * Prepends base path from import.meta.env.BASE_URL for proper deployment.
- * Works with Astro's build.format: 'directory' setting.
+ * - Resolves relative links (./ and ../) using the source file's path
+ * - Prepends base path to absolute links (/) for subdirectory deployments
+ * - Works with Astro's build.format: 'directory' setting
  */
 
 import { visit } from 'unist-util-visit';
@@ -22,37 +22,51 @@ export default function remarkMarkdownLinks() {
       remarkMarkdownLinks._logged = true;
     }
 
-    if (!filePath) return;
-
-    // Extract docs-relative path
-    const docsMatch = filePath.match(/(?:\/docs\/|\/content\/docs\/)(.+)$/);
-    if (!docsMatch) return;
-
-    const currentDir = path.dirname(docsMatch[1]);
+    // Extract docs-relative path for resolving relative links
+    const docsMatch = filePath?.match(/(?:\/docs\/|\/content\/docs\/)(.+)$/);
+    const currentDir = docsMatch ? path.dirname(docsMatch[1]) : null;
 
     visit(tree, 'link', (node) => {
       const href = node.url;
       if (typeof href !== 'string') return;
-      if (!href.startsWith('./') && !href.startsWith('../')) return;
 
-      // Extract path and suffix
+      // Skip external links and special protocols
+      if (
+        href.startsWith('http://') ||
+        href.startsWith('https://') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        href.startsWith('#')
+      )
+        return;
+
+      // Extract path and suffix (hash/query)
       const hashIdx = href.indexOf('#');
       const queryIdx = href.indexOf('?');
       const delimIdx = Math.min(hashIdx === -1 ? Infinity : hashIdx, queryIdx === -1 ? Infinity : queryIdx);
-
       const pathPortion = delimIdx === Infinity ? href : href.substring(0, delimIdx);
       const suffix = delimIdx === Infinity ? '' : href.substring(delimIdx);
 
-      if (!pathPortion.endsWith('.md')) return;
+      // Handle absolute paths - just prepend base path
+      if (href.startsWith('/')) {
+        node.url = basePath + href;
+        return;
+      }
+
+      // Handle relative paths - need to resolve against current file location
+      if (!currentDir) return;
+      if (!href.startsWith('./') && !href.startsWith('../')) return;
 
       // Resolve relative path to absolute
       let resolved = path.posix.normalize(path.posix.join(currentDir, pathPortion));
 
-      // Transform .md to directory path
-      if (resolved.endsWith('/index.md')) {
-        resolved = resolved.replace(/\/index\.md$/, '/');
-      } else {
-        resolved = resolved.replace(/\.md$/, '/');
+      // Transform .md links to directory paths
+      if (pathPortion.endsWith('.md')) {
+        if (resolved.endsWith('/index.md')) {
+          resolved = resolved.replace(/\/index\.md$/, '/');
+        } else {
+          resolved = resolved.replace(/\.md$/, '/');
+        }
       }
 
       if (!resolved.startsWith('/')) {
