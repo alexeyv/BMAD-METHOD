@@ -21,8 +21,16 @@ const archiver = require('archiver');
 const PROJECT_ROOT = path.dirname(__dirname);
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 
-// For local builds, use localhost. Production URL set via SITE_URL env var in CI.
-const SITE_URL = process.env.SITE_URL || 'http://localhost:4321';
+// Same logic as website/src/lib/site-url.js - duplicated to avoid CJS/ESM complexity
+function getSiteUrl() {
+  if (process.env.SITE_URL) return process.env.SITE_URL;
+  if (process.env.GITHUB_REPOSITORY) {
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    return `https://${owner}.github.io/${repo}`;
+  }
+  return 'http://localhost:4321';
+}
+const SITE_URL = getSiteUrl();
 const REPO_URL = 'https://github.com/bmad-code-org/BMAD-METHOD';
 
 const LLM_MAX_CHARS = 600_000;

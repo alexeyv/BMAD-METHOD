@@ -2,7 +2,7 @@
  * Resolve the site's base URL using cascading environment defaults.
  *
  * Preference order: use SITE_URL if set; otherwise derive a GitHub Pages URL from GITHUB_REPOSITORY; otherwise use the local development URL.
- * @returns {string} The resolved site URL (SITE_URL override, or `https://{owner}.github.io/{repo}`, or `http://localhost:3000`).
+ * @returns {string} The resolved site URL (SITE_URL override, or `https://{owner}.github.io/{repo}`, or `http://localhost:4321`).
  */
 export function getSiteUrl() {
   // Explicit override (works in both local and GitHub Actions)
@@ -20,6 +20,6 @@ export function getSiteUrl() {
     return `https://${owner}.github.io/${repo}`;
   }
 
-  // Local development: use dev server
-  return 'http://localhost:3000';
+  // Local development: use Astro dev server
+  return 'http://localhost:4321';
 }
