@@ -117,59 +117,10 @@ function buildAstroSite() {
   runAstroBuild();
   copyArtifactsToSite(artifactsDir, siteDir);
 
-  // Verify all links in built site
-  verifyBuiltLinks(siteDir);
-
   console.log();
   console.log(`  \u001B[32m✓\u001B[0m Astro build complete`);
 
   return siteDir;
-}
-
-/**
- * Verify all internal links in the built site using lychee.
- * Starts a local server and crawls the site.
- */
-function verifyBuiltLinks(siteDir) {
-  // TEMPORARY: Only run for local dev (remove before merging)
-  if (require('node:os').userInfo().username !== 'alex') {
-    console.log('  → Skipping link verification (CI)');
-    return;
-  }
-
-  console.log('  → Verifying links in built site...');
-
-  const { spawn } = require('node:child_process');
-  const url = new URL(SITE_URL);
-  const port = url.port || '4321';
-
-  // Start local server
-  const serverProcess = spawn('npx', ['serve', siteDir, '-l', port, '--single'], {
-    cwd: PROJECT_ROOT,
-    stdio: 'pipe',
-    detached: true,
-  });
-
-  // Wait for server to start
-  execSync('sleep 2');
-
-  try {
-    execSync(`lychee 'http://localhost:${port}/' --no-progress`, {
-      cwd: PROJECT_ROOT,
-      stdio: 'inherit',
-    });
-    console.log(`  \u001B[32m✓\u001B[0m Link verification passed`);
-  } catch {
-    console.error(`\n  \u001B[31m✗\u001B[0m Link verification failed - fix broken links before deploying\n`);
-    process.kill(-serverProcess.pid);
-    process.exit(1);
-  } finally {
-    try {
-      process.kill(-serverProcess.pid);
-    } catch {
-      // Server already stopped
-    }
-  }
 }
 
 // =============================================================================
