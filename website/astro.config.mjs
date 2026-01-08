@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
-import rehypeMarkdownLinks from './src/rehype-markdown-links.js';
+import remarkMarkdownLinks from './src/remark-markdown-links.js';
 import { getSiteUrl } from './src/lib/site-url.js';
 
 const siteUrl = getSiteUrl();
@@ -14,6 +14,8 @@ export default defineConfig({
   site: `${urlParts.origin}${basePath}`,
   base: basePath,
   outDir: '../build/site',
+  // Using default build.format: 'directory' for Starlight compatibility
+  // This produces /page/ URLs instead of /page.html but preserves relative link integrity
 
   // Disable aggressive caching in dev mode
   vite: {
@@ -28,7 +30,7 @@ export default defineConfig({
   },
 
   markdown: {
-    rehypePlugins: [rehypeMarkdownLinks],
+    remarkPlugins: [remarkMarkdownLinks],
   },
 
   integrations: [

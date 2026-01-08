@@ -335,6 +335,7 @@ function runAstroBuild() {
     stdio: 'inherit',
     env: {
       ...process.env,
+      SITE_URL,
       NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --disable-warning=MODULE_TYPELESS_PACKAGE_JSON`.trim(),
     },
   });

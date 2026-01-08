@@ -29,7 +29,7 @@ The BMad Method is meant to be adapted and customized to your specific needs. In
 
 First know there is the full BMad Method Process and then there is a Quick Flow for those quicker smaller efforts.
 
-- **[Full Adaptive BMad Method](#workflow-guides)** - Full planning and scope support through extensive development and testing.
+- **[Full Adaptive BMad Method](#-workflow-guides)** - Full planning and scope support through extensive development and testing.
   - Broken down into 4 phases, all of which are comprised of both required and optional phases
     - Phases 1-3 are all about progressive idea development through planning and preparations to build your project.
     - Phase 4 is the implementation cycle where you will Just In Time (JIT) produce the contextual stories needed for the dev agent based on the extensive planning completed

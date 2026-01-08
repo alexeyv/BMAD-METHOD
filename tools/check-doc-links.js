@@ -53,7 +53,7 @@ function headingToAnchor(heading) {
     .replaceAll(/[^\w\s-]/g, '') // Remove special chars except hyphens
     .replaceAll(/\s+/g, '-') // Spaces to hyphens
     .replaceAll(/-+/g, '-') // Collapse multiple hyphens
-    .replaceAll(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+    .replaceAll(/-+$/g, ''); // Trim trailing hyphens only (Starlight keeps leading hyphens from emoji removal)
 }
 
 /**

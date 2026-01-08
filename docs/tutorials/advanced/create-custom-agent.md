@@ -148,9 +148,9 @@ Edit the agent YAML directly or use the customization file in `_bmad/_config/age
 Yes. Package your agent as a standalone module and share it with your team or the community.
 
 **Where can I see example agents?**
-Study the reference agents in `src/modules/bmb/reference/agents/`:
-- [commit-poet](https://github.com/bmad-code-org/BMAD-METHOD/tree/main/src/modules/bmb/reference/agents/simple-examples/commit-poet.agent.yaml) (Simple)
-- [journal-keeper](https://github.com/bmad-code-org/BMAD-METHOD/tree/main/src/modules/bmb/reference/agents/expert-examples/journal-keeper) (Expert)
+Study the reference agents in `src/modules/bmb/workflows/agent/data/reference/`:
+- [commit-poet](https://github.com/bmad-code-org/BMAD-METHOD/tree/main/src/modules/bmb/workflows/agent/data/reference/simple-examples/commit-poet.agent.yaml) (Simple)
+- [journal-keeper](https://github.com/bmad-code-org/BMAD-METHOD/tree/main/src/modules/bmb/workflows/agent/data/reference/expert-examples/journal-keeper) (Expert)
 
 ## Getting Help
 
