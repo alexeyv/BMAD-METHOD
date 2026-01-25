@@ -215,6 +215,9 @@ export default defineConfig({
       // Pagination
       pagination: false,
 
+      // Use our docs/404.md instead of Starlight's built-in 404
+      disable404Route: true,
+
       // Custom components
       components: {
         Header: './src/components/Header.astro',
