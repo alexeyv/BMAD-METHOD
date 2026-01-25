@@ -63,25 +63,11 @@ Open a terminal in your project directory and run:
 npx bmad-method@alpha install
 ```
 
-The interactive installer guides you through setup and creates a `_bmad/` folder with all agents and workflows.
+When prompted to select modules, choose **BMad Method**.
 
-Verify your installation:
-
-```
-your-project/
-├── _bmad/
-│   ├── bmm/            # Method module
-│   │   ├── agents/     # Agent files
-│   │   ├── workflows/  # Workflow files
-│   │   └── config.yaml # Module config
-│   └── core/           # Core utilities
-├── _bmad-output/       # Generated artifacts (created later)
-└── .claude/            # IDE configuration (if using Claude Code)
-```
-
-:::tip[Troubleshooting]
-Having issues? See [Install BMad](/docs/how-to/installation/install-bmad.md) for common solutions.
-:::
+The installer creates two folders:
+- `_bmad/` — agents, workflows, tasks, and configuration
+- `_bmad-output/` — empty for now, but this is where your artifacts will be saved
 
 Open your AI IDE in the project folder. Run the `help` workflow (`/bmad-help` on most platforms) to see what to do next — it detects what you've completed and recommends the next step.
 

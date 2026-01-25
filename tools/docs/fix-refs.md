@@ -15,8 +15,11 @@ Before fixing references, determine who the document is for:
 
 | Audience | Indicators | Style |
 |----------|------------|-------|
-| **Newbies** | tutorials/, getting-started, "What You'll Learn" | Keep "workflow", include platform hints |
-| **Experienced** | reference/, how-to/, explanation/ | Drop "workflow", no platform hints |
+| **Newbies** | tutorials/, getting-started, installation/, "What You'll Learn" | Keep "workflow", include platform hints |
+| **Experienced** | reference/, explanation/ | Drop "workflow", no platform hints |
+| **How-To** | how-to/ | **Ask** — depends on the task |
+
+**How-To guides require judgment**: Don't assume experienced. Ask: "Does this task require prior BMad knowledge?" Early-journey tasks (first PRD, first sprint) are newbie docs. Customization and advanced features are experienced.
 
 **If unclear**: Ask the user "Who is the target audience for this document — new users learning BMad, or experienced users who know the system?"
 
@@ -42,10 +45,11 @@ Use backticks with plain workflow name:
 - **Newbie docs** (getting-started): "Run the `prd` workflow" — helps them learn what it is
 - **Other docs**: "Run `prd`" — they already know, so "workflow" is noise
 
-**Platform hint**: Only in getting-started/newbie docs, first mention can include hint:
-- Run the `help` workflow (`/bmad-help` on most platforms)
+**Platform hint**: Only in newbie docs, and only on the **first** workflow mention:
+- First mention: Run the `help` workflow (`/bmad-help` on most platforms)
+- Subsequent mentions: Run `prd` — no hint, no "workflow" needed after they've seen the pattern
 
-In all other docs, the hint is noise — just use the workflow name.
+In experienced docs, the hint is always noise — just use the workflow name.
 
 ### Workflow Name Changes
 

@@ -41,11 +41,11 @@ docs = requests.get("https://bmad-code-org.github.io/BMAD-METHOD/llms-full.txt")
 
 ## Installation Options
 
-### NPM (Recommended)
-
 ```bash
 npx bmad-method@alpha install
 ```
+
+[More details](/docs/how-to/installation/install-bmad.md)
 
 ## Version Information
 
