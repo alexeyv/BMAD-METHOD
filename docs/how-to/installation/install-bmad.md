@@ -14,7 +14,7 @@ Use the `npx bmad-method install` command to set up BMad in your project with yo
 :::note[Prerequisites]
 - **Node.js** 20+ (required for the installer)
 - **Git** (recommended)
-- **AI-powered IDE** (Claude Code, Cursor, Windsurf, or similar)
+- **AI tool** (Claude Code, Cursor, Windsurf, or similar)
 :::
 
 ## Steps
@@ -34,14 +34,14 @@ The installer will ask where to install BMad files:
 
 ### 3. Select Your AI Tools
 
-Choose which AI tools you'll be using:
+Pick which AI tools you use:
 
 - Claude Code
 - Cursor
 - Windsurf
-- Many others to choose from
+- Others
 
-The installer configures BMad for your selected tools by setting up commands that will call the ui.
+Each tool has its own way of integrating commands. The installer creates tiny prompt files to activate workflows and agents — it just puts them where your tool expects to find them.
 
 ### 4. Choose Modules
 
@@ -61,7 +61,7 @@ your-project/
 │   ├── core/           # Required core module
 │   └── ...
 ├── _bmad-output/       # Generated artifacts
-└── .claude/            # IDE integration (if using Claude Code)
+└── .claude/            # Claude Code commands (if using Claude Code)
 ```
 
 ## Verify Installation
