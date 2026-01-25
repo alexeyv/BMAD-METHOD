@@ -188,7 +188,7 @@ inventory:
       alternate_agents:
         - pm
       outputs:
-        - "@impl-readiness-report.md"
+        - "@implementation-readiness-report.md"
       next_steps: []
 
     # Phase 4: Implementation
@@ -317,7 +317,7 @@ inventory:
       description: System architecture and design
     - file: "@epics.md"
       description: Epic and story breakdown
-    - file: "@impl-readiness-report.md"
+    - file: "@implementation-readiness-report.md"
       description: Implementation readiness report
     - file: "@sprint-status.yaml"
       description: Sprint status and planning
@@ -367,7 +367,7 @@ annotations:
     "@ux-design-directions.html": Visual design directions
     "@architecture.md": System architecture and design
     "@epics.md": Epic and story breakdown
-    "@impl-readiness-report.md": Implementation readiness report
+    "@implementation-readiness-report.md": Implementation readiness report
     "@sprint-status.yaml": Sprint status and planning
     "@{epic}-{story}-*.md": Story implementation details
     "@sprint-change-proposal.md": Sprint change proposal

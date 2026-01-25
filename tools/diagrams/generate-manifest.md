@@ -249,20 +249,30 @@ For EACH phase directory (`1-analysis`, `2-plan-workflows`, `3-solutioning`, `4-
    - If not found → `outputs: []`
 
    **For Markdown configs (`workflow.md`):**
-   - Look for `### Paths` or `### Output Files` section
-   - Extract `default_output_file` value if present
+   - Look for `default_output_file` in frontmatter or `### Paths` section
    - Extract any additional output files listed (e.g., HTML files)
-   - If no output section found → apply BMM Conventions (below)
+   - If found → use those values
+   - If NOT found → check for sharded workflow (below)
 
-   **BMM Conventions** (for `.md` workflows without explicit output declarations):
-   These are documented methodology conventions, not guesses:
-   - `prd/` → `@PRD.md`
-   - `create-product-brief/` → `@product-brief.md`
-   - `create-architecture/` → `@architecture.md`
-   - `create-ux-design/` → `@ux-design-specification.md`, `@ux-color-themes.html`, `@ux-design-directions.html`
-   - `quick-spec/` → `@tech-spec.md` (historical naming - workflow renamed from create-tech-spec)
-   - `research/` → `[]` (no output file)
-   - All others → `[]` (no output file)
+   **For Sharded workflows (`workflow.md` + `steps/` directory):**
+   - Check if `steps/` subdirectory exists
+   - If yes, scan `steps/step-01*.md` files (init steps declare outputs)
+   - Look for `outputFile:` in YAML frontmatter
+   - Extract the filename from the path pattern:
+     - `'{planning_artifacts}/prd.md'` → `@prd.md`
+     - `'{planning_artifacts}/implementation-readiness-report-{{date}}.md'` → `@implementation-readiness-report.md` (strip template vars)
+   - Normalize: strip path placeholders, strip `{{...}}` template variables, prefix with `@`
+   - If multiple step-01 files exist (e.g., step-01-init.md, step-01b-continue.md), use the first one with `outputFile:`
+   - If no `outputFile:` found in step files → `outputs: []`
+
+   **Filename Normalization Rules:**
+   - Remove path prefix: `{planning_artifacts}/`, `{implementation_artifacts}/`, etc.
+   - Remove template variables: `{{date}}`, `{{project_name}}`, etc. (and surrounding hyphens/underscores)
+   - Prefix with `@`
+   - Examples:
+     - `'{planning_artifacts}/implementation-readiness-report-{{date}}.md'` → `@implementation-readiness-report.md`
+     - `'{planning_artifacts}/product-brief-{{project_name}}-{{date}}.md'` → `@product-brief.md`
+     - `'{planning_artifacts}/prd.md'` → `@prd.md`
 
    Note: Output _descriptions_ for the legend come from annotations, not discovery.
 
@@ -640,7 +650,7 @@ annotations:
     '@ux-design-specification.md': 'UX design and wireframes'
     '@architecture.md': 'System architecture and design'
     '@epics.md': 'Epic and story breakdown'
-    '@impl-readiness-report.md': 'Implementation readiness report'
+    '@implementation-readiness-report.md': 'Implementation readiness report'
     '@sprint-status.yaml': 'Sprint status and planning'
     '@{epic}-{story}-*.md': 'Story implementation details'
     '@sprint-change-proposal.md': 'Sprint change proposal'

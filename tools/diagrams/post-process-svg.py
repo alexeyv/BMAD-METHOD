@@ -129,7 +129,7 @@ LEGEND_SVG = '''
     <tspan fill="#666"> · System architecture</tspan>
   </text>
   <text x="20" y="296" font-family="ShareTechMono, monospace" font-size="20">
-    <tspan fill="#333" font-weight="bold">@impl-readiness-report.md</tspan>
+    <tspan fill="#333" font-weight="bold">@implementation-readiness-report.md</tspan>
     <tspan fill="#666"> · Readiness validation</tspan>
   </text>
 
