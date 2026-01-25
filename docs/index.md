@@ -15,12 +15,6 @@ The fastest way to understand BMad is to try it.
 - **[Get Started with BMad](/docs/tutorials/getting-started/getting-started-bmadv6.md)** — Install and understand how BMad works
 - **[Workflow Guide](/workflow-guide)** — A simple visual overview of the various BMad tracks that get you going quickly.
 
-:::tip[Already familiar with AI-assisted development?]
-Feel free to skip around. Use the sidebar to jump to any topic, or check out [What Are Agents?](/docs/explanation/core-concepts/what-are-agents.md) to understand how BMad organizes its AI personas.
-:::
-
----
-
 ## How to Use These Docs
 
 These docs are organized into four sections based on what you're trying to do:
