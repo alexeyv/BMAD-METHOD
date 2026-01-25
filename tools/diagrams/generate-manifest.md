@@ -19,6 +19,14 @@ modules:
     source_root: 'src/core'
     agents_path: 'src/core/agents'
     workflows_path: 'src/core/workflows'
+    manifest_rules:
+      exclude_agents:
+        - bmad-master  # Orchestrator only - has no workflow ownership
+      workflow_agent_assignment: |
+        Core workflows are generic utilities, not owned by any agent.
+        - Set `agent: null` for all core workflows
+        - Populate `alternate_agents` with any BMM agents that claim the
+          workflow in their menu (exec or workflow trigger)
 
   # BMM module - the BMad Method with phased workflows
   bmm:
