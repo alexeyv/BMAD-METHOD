@@ -3,10 +3,6 @@ title: "Getting Started with the BMad Method"
 description: Install BMad and build your first project
 ---
 
-**Upgrading from previous versions?** See the [Upgrade Guide](/docs/how-to/installation/upgrade-to-v6.md) instead.
-
----
-
 Build software faster using AI-powered workflows with specialized agents that guide you through planning, architecture, and implementation.
 
 ## What You'll Learn
@@ -196,8 +192,7 @@ Not strictly. Once you learn the flow, you can run workflows directly using the 
 
 - **During workflows** — Agents guide you with questions and explanations
 - **Community** — [Discord](https://discord.gg/gk8jAdXWmj) (#bmad-method-help, #report-bugs-and-issues)
-- **Documentation** — [BMM Workflow Reference](/docs/reference/workflows/index.md)
-- **Video tutorials** — [BMad Code YouTube](https://www.youtube.com/@BMadCode)
+- **Stuck?** — Run `help` to see what to do next
 
 ## Key Takeaways
 
