@@ -3,13 +3,13 @@ name: 'step-01-document-discovery'
 description: 'Discover and inventory all project documents, handling duplicates and organizing file structure'
 
 # Path Definitions
-workflow_path: '{project-root}/_bmad/bmm/workflows/3-solutioning/implementation-readiness'
+workflow_path: '{project-root}/_bmad/bmm/workflows/3-solutioning/check-implementation-readiness'
 
 # File References
 thisStepFile: './step-01-document-discovery.md'
 nextStepFile: './step-02-prd-analysis.md'
 workflowFile: '{workflow_path}/workflow.md'
-outputFile: '{planning_artifacts}/implementation-readiness-report-{{date}}.md'
+outputFile: '{planning_artifacts}/check-implementation-readiness-report-{{date}}.md'
 templateFile: '{workflow_path}/templates/readiness-report-template.md'
 ---
 

@@ -2,6 +2,19 @@
 
 Validate `tools/diagrams/workflow-manifest.yaml` against the source code in `src/`. The manifest makes factual claims—entities exist, have properties, stand in relationships. Find evidence for each claim.
 
+## Intentional Exclusions
+
+The following directories exist in `src/modules/bmm/workflows/` but are **intentionally excluded** from the manifest. Do NOT flag these as "unclaimed":
+
+```yaml
+excluded_directories:
+  - excalidraw-diagrams/  # Diagram generation utilities, not BMM phase workflows
+  - testarch/             # Test architecture workflows, separate concern from BMM
+  - document-project/     # Brownfield documentation utility, not part of BMM flow
+```
+
+These are documented in `generate-manifest.md` under `scan_rules.exclude`.
+
 ## Instructions
 
 ### Step 1: Read the Manifest
@@ -95,8 +108,12 @@ Report format:
 
 1. Glob for all directories in `src/modules/bmm/workflows/*/`
 2. Glob for all `.agent.yaml` files in `src/modules/bmm/agents/`
-3. Compare against manifest claims
-4. List anything in source but NOT in manifest
+3. **Filter out intentional exclusions** (see "Intentional Exclusions" section above):
+   - `excalidraw-diagrams/`
+   - `testarch/`
+   - `document-project/`
+4. Compare remaining directories against manifest claims
+5. List anything in source but NOT in manifest AND not in exclusions
 
 ### Step 8: Compile Final Report
 
@@ -126,6 +143,7 @@ Produce a summary:
 
 ## Unclaimed in Source
 - [directories/files that exist but manifest doesn't mention]
+- Note: Intentionally excluded directories (excalidraw-diagrams, testarch, document-project) are NOT listed here
 
 ## Verdict
 [PASS | PASS WITH WARNINGS | FAIL]
