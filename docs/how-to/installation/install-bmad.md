@@ -39,73 +39,51 @@ Choose which AI tools you'll be using:
 - Claude Code
 - Cursor
 - Windsurf
--  Many others to choose from
+- Many others to choose from
 
 The installer configures BMad for your selected tools by setting up commands that will call the ui.
 
 ### 4. Choose Modules
 
-Select which modules to install:
+The installer shows available modules. Select whichever ones you need — most users just want **BMad Method** (the software development module).
 
-| Module   | Purpose                                   |
-| -------- | ----------------------------------------- |
-| **BMM**  | Core methodology for software development |
-| **BMGD** | Game development workflows                |
-| **CIS**  | Creative intelligence and facilitation    |
-| **BMB**  | Building custom agents and workflows      |
+### 5. Follow the Prompts
 
-### 5. Add Custom Content (Optional)
-
-If you have custom agents, workflows, or modules, point to their location and the installer will integrate them.
-
-### 6. Configure Settings
-
-For each module, either accept recommended defaults (faster) or customize settings (more control).
+The installer guides you through the rest — custom content, settings, etc.
 
 ## What You Get
 
 ```
 your-project/
 ├── _bmad/
-│   ├── bmm/            # Method module
-│   │   ├── agents/     # Agent files
-│   │   ├── workflows/  # Workflow files
-│   │   └── config.yaml # Module config
-│   ├── core/           # Core utilities
+│   ├── bmm/            # Your selected modules
+│   │   └── config.yaml # Module settings (if you ever need to change them)
+│   ├── core/           # Required core module
 │   └── ...
 ├── _bmad-output/       # Generated artifacts
-└── .claude/            # IDE configuration
+└── .claude/            # IDE integration (if using Claude Code)
 ```
 
 ## Verify Installation
 
-1. Check the `_bmad/` directory exists
-2. Load an agent in your AI tool
-3. Run `/workflow-init`  which will autocomplete to the full command to see available commands
+Run the `help` workflow (`/bmad-help` on most platforms) to verify everything works and see what to do next.
 
-## Configuration
+## Living on the Edge
 
-Edit `_bmad/[module]/config.yaml` to customize. For example these could be changed:
-
-```yaml
-output_folder: ./_bmad-output
-user_name: Your Name
-communication_language: english
+**Latest pre-release (alpha/beta):**
+```bash
+npx bmad-method@alpha install
 ```
+
+**Latest from main branch:**
+```bash
+npx github:bmad-code-org/BMAD-METHOD install
+```
+
+Use these if you want the newest features before they're officially released. Things might break, but you'll have access to the latest improvements.
 
 ## Troubleshooting
 
-**"Command not found: npx"** — Install Node.js 20+:
-```bash
-brew install node
-```
+**Installer throws an error** — Copy-paste the output into your AI assistant and let it figure it out.
 
-**"Permission denied"** — Check npm permissions:
-```bash
-npm config set prefix ~/.npm-global
-```
-
-**Installer hangs** — Try running with verbose output:
-```bash
-npx bmad-method install --verbose
-```
+**Installer worked but something doesn't work later** — Your AI needs BMad context to help. See [How to Get Answers About BMad](/docs/how-to/get-answers-about-bmad.md) for how to point your AI at the right sources.
