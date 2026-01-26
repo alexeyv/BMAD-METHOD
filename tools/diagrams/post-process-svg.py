@@ -193,6 +193,10 @@ STAMP_ROTATION = 10
 def inject_stamp(content):
     """Inject red herring stamp in lower-right corner."""
 
+    import os
+    if not os.path.exists(STAMP_FILE):
+        return content
+
     # Read and encode stamp image
     with open(STAMP_FILE, 'rb') as f:
         stamp_data = base64.b64encode(f.read()).decode('utf-8')
