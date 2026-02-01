@@ -27,6 +27,7 @@ wipFile: '{implementation_artifacts}/tech-spec-wip.md'
 - Focus: Define the technical requirement delta and scope.
 - Investigation: Perform surface-level code scans ONLY to verify the delta. Reserve deep dives into implementation consequences for Step 2.
 - Objective: Establish a verifiable delta between current state and target state.
+- Reference: See `{workflow_path}/analysis-guidelines.md` for detailed analysis criteria.
 
 ## SEQUENCE OF INSTRUCTIONS
 
