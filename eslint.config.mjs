@@ -36,6 +36,8 @@ export default [
       'tools/template-test-generator/test-scenarios/**',
       'src/modules/*/sub-modules/**',
       '.bundler-temp/**',
+      // Augment Code Review config uses underscores per their spec
+      '.augment/**',
     ],
   },
 
