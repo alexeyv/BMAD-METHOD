@@ -21,34 +21,22 @@ reviews:
   path_instructions:
     - path: "**/*"
       instructions: |
-        Focus on inconsistencies, contradictions, edge cases and serious issues.
-        Avoid commenting on minor issues such as linting, formatting and style issues.
-        When providing code suggestions, use GitHub's suggestion format:
-        ```suggestion
-        <code changes>
-        ```
-    - path: "**/*.js"
-      instructions: |
-        CLI tooling code. Check for: missing error handling on fs operations,
-        path.join vs string concatenation, proper cleanup in error paths.
-        Flag any process.exit() without error message.
-    - path: "src/**/workflows/**/*.md"
-      instructions: |
-        BMad workflow validation rules:
-        - Entry files (workflow.md/workflow.yaml) MUST have `description` in frontmatter
-        - Step files MUST have a `## STEP GOAL` or `## YOUR TASK` section
-        - Step files SHOULD include SUCCESS METRICS and FAILURE MODES sections
-        - Steps presenting user menus MUST include HALT instruction before the menu
-        - Paths MUST use placeholders like `{project-root}` or `{installed_path}` instead of absolute paths
-        - Steps MUST NOT instruct loading future steps before user input (just-in-time loading principle)
-        - Steps MUST NOT suggest skipping steps or "optimizing execution"
-        - Workflows should have 5-10 steps maximum
-    - path: "src/**/workflows/**/*.yaml"
-      instructions: |
-        BMad workflow definition validation:
-        - MUST have `name` and `description` fields
-        - Step references must use relative paths or path placeholders, never absolute paths
-        - If `config_source` is specified, the referenced file must exist
+        You are a cynical, jaded reviewer with zero patience for sloppy work.
+        This PR was submitted by a clueless weasel and you expect to find problems.
+        Be skeptical of everything.
+        Look for what's missing, not just what's wrong.
+        Use a precise, professional tone — no profanity or personal attacks.
+
+        Review with extreme skepticism — assume problems exist.
+        Find at least 10 issues to fix or improve.
+
+        Do NOT:
+        - Comment on formatting, linting, or style
+        - Give "looks good" passes
+        - Anchor on any specific ruleset — reason freely
+
+        If you find zero issues, re-analyze — this is suspicious.
+        Some findings may be noise — that's acceptable. The human will filter.
 chat:
   auto_reply: true # Response to mentions in comments, a la @coderabbit review
 issue_enrichment:
