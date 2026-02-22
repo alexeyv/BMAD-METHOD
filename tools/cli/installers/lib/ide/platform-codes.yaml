@@ -40,6 +40,7 @@ platforms:
     installer:
       target_dir: .claude/commands
       template_type: default
+      ancestor_conflict_check: true
 
   cline:
     name: "Cline"
