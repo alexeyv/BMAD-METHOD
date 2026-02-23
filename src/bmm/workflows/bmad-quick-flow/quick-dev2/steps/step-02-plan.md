@@ -2,7 +2,7 @@
 name: 'step-02-plan'
 description: 'Investigate, generate spec, present for approval'
 
-slug: kebab-cased strings are valid as a file name, based on the intent 
+slug: kebab-cased strings are valid as a file name, based on the intent
 wipFile: '{implementation_artifacts}/tech-spec-[slug].md'
 templateFile: '{installed_path}/tech-spec-template.md'
 ---
@@ -29,7 +29,7 @@ templateFile: '{installed_path}/tech-spec-template.md'
 
 Present summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
-- **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Scope/Non-Goals/Golden Examples. → Step 3.
+- **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Boundaries/Golden Examples. → Step 3.
 - **E**: Apply changes, re-present.
 - **F**: Exit to full BMM.
 
