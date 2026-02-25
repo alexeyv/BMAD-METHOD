@@ -35,7 +35,9 @@ A specification is "Ready for Development" when:
 
 A specification should target a **single user-facing goal** within **400–1200 words**:
 
-- **Single goal**: One cohesive feature, even if it spans multiple layers/files. Use the independent-verb test: if the intent has >=2 verbs that could ship independently ("add X AND refactor Y"), it's multi-goal.
+- **Single goal**: One cohesive feature, even if it spans multiple layers/files. Multi-goal means >=2 **top-level independent shippable deliverables** — each could be reviewed, tested, and merged as a separate PR without breaking the others. Never count surface verbs, "and" conjunctions, or noun phrases. Never split cross-layer implementation details inside one user goal.
+  - Split: "add dark mode toggle AND refactor auth to JWT AND build admin dashboard"
+  - Don't split: "add validation and display errors" / "support drag-and-drop AND paste AND retry"
 - **400–1200 words**: Optimal range for LLM consumption. Below 400 risks ambiguity; above 1200 risks context-rot in implementation agents.
 - **Neither limit is a gate.** Both are proposals with user override.
 

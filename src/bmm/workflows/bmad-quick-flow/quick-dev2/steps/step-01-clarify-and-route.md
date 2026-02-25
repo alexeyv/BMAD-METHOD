@@ -26,7 +26,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 ## INSTRUCTIONS
 
 1. Clarify intent. Do not fantasize, do not leave open questions. Keep asking the human until clear enough to implement.
-2. Multi-goal check (SCOPE STANDARD). If intent has >=2 independent goals (verbs that could ship separately):
+2. Multi-goal check (SCOPE STANDARD). If intent has >=2 top-level independent shippable deliverables (each could ship as its own PR). Never count surface verbs, "and" conjunctions, or sub-components of one feature:
    - Present detected child stories as a bullet list.
    - `[S] Split — pick first story, note the rest  [K] Keep as single spec`
    - **S**: Append child stories to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
