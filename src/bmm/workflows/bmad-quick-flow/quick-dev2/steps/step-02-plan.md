@@ -5,6 +5,7 @@ description: 'Investigate, generate spec, present for approval'
 slug: kebab-cased strings are valid as a file name, based on the intent
 wipFile: '{implementation_artifacts}/tech-spec-[slug].md'
 templateFile: '{installed_path}/tech-spec-template.md'
+deferred_findings_file: '{output_dir}/deferred-findings.md'
 ---
 
 # Step 2: Plan
@@ -24,10 +25,15 @@ templateFile: '{installed_path}/tech-spec-template.md'
 2. Generate spec from `{templateFile}` into `{wipFile}`.
 3. Self-review against READY FOR DEVELOPMENT standard.
 4. If intent gaps exist, do not fantasize, do not leave open questions, ask the human.
+5. Word count check (SCOPE STANDARD). If spec exceeds ~1200 words:
+   - Show user the word count.
+   - `[S] Split — carve off child stories  [K] Keep as-is`
+   - **S**: Identify sections corresponding to independent child stories. Write them to `{deferred_findings_file}` under `## Deferred Stories`. Remove only those sections from the current spec — never compress prose to hit a word count. Continue to checkpoint.
+   - **K**: Continue to checkpoint with full spec.
 
 ### CHECKPOINT 1
 
-Present summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
+Present summary (if word count exceeded ~1200 and user chose [K], echo the word count here). `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
 - **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Boundaries/Golden Examples. → Step 3.
 - **E**: Apply changes, re-present.
