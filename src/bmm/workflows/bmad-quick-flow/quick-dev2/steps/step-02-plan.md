@@ -33,7 +33,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ### CHECKPOINT 1
 
-Present summary (if word count exceeded 1200 and user chose [K], echo the word count here). `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
+Present summary. If word count exceeded 1200 and user chose [K], include the word count in the summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
 - **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Boundaries/Golden Examples. → Step 3.
 - **E**: Apply changes, re-present.
