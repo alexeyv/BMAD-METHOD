@@ -1,87 +1,68 @@
 ---
 title: '{title}'
 slug: '{slug}'
+type: 'feature' # feature | bugfix | refactor | chore
 created: '{date}'
-status: 'in-progress'
+status: 'draft' # draft | ready | in-progress | done
 ---
+
+<!-- Target: 400–1000 words. Below 400 = ambiguous. Above 1000 = context rot risk. -->
 
 # {title}
 
-## Problem
+## Intent
 
-<!-- What is broken or missing, and why does it matter? -->
+<!-- What is broken or missing, and why it matters. Then the high-level approach — the "what", not the "how". -->
 
-{problem_and_why_it_matters}
+PROBLEM_AND_WHY_IT_MATTERS
 
-## Solution
-
-<!-- High-level approach — the "what", not the "how". -->
-
-{high_level_approach}
+HIGH_LEVEL_APPROACH
 
 ## Boundaries & Constraints
 
 <!-- Three tiers: Always = invariant rules. Ask First = human-gated decisions. Never = out of scope + forbidden approaches. -->
 
-**Always:** {must_follow_rules}
+**Always:** INVARIANT_RULES
 
-**Ask First:** {decisions_requiring_human_approval}
+**Ask First:** DECISIONS_REQUIRING_HUMAN_APPROVAL
 
-**Never:** {non_goals_and_forbidden_approaches}
+**Never:** NON_GOALS_AND_FORBIDDEN_APPROACHES
 
 ## Context & Code Map
 
-<!-- Agent-populated during planning. Concrete file paths prevent blind codebase searching. -->
+<!-- Agent-populated during planning. Annotated paths prevent blind codebase searching. -->
 
-- {entry_point_or_key_file}
-- {related_file}
-- {related_file}
+- `FILE` -- ROLE_OR_RELEVANCE
 
 ## I/O & Edge-Case Matrix
 
-<!-- Tabular edge cases — table format exploits LLM attention strengths over prose. Omit section if task has no meaningful I/O scenarios. -->
+<!-- Omit section if task has no meaningful I/O scenarios. Table format exploits LLM attention strengths over prose. -->
 
-| Scenario | Input / State | Expected Outcome | Error Handling |
-|----------|--------------|------------------|----------------|
-| {happy_path} | {input} | {outcome} | N/A |
-| {error_case} | {input} | {outcome} | {error} |
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| HAPPY_PATH | INPUT | OUTCOME | N/A |
+| ERROR_CASE | INPUT | OUTCOME | ERROR_HANDLING |
 
-## Tasks
+## Tasks & Acceptance
 
-<!-- Each task: backtick-quoted file path -- action to take -- rationale. One task per file change. -->
+<!-- Tasks: backtick-quoted file path -- action -- rationale. Prefer one task per file; group tightly-coupled changes when splitting would be artificial. -->
+<!-- AC: Given/When/Then. Covers system-level behaviors not captured by the I/O matrix. Do not duplicate I/O scenarios here. -->
 
-- [ ] Task 1: `{file}` -- {action} -- {rationale}
+- [ ] `FILE` -- ACTION -- RATIONALE
+- [ ] AC: Given PRECONDITION, when ACTION, then EXPECTED_RESULT
 
-## Acceptance Criteria
+## Design Notes
 
-<!-- Given/When/Then format. Each AC must be independently verifiable. -->
+<!-- Optional. Design rationale and golden examples only when the approach is non-obvious. Keep examples to 5–10 lines. If straightforward, omit this section. -->
 
-- [ ] AC 1: Given {precondition}, when {action}, then {expected_result}
-
-## Technical Decisions
-
-<!-- Record rationale for design choices, not implementation steps. Why this approach, not how to code it. -->
-
-{technical_decisions}
-
-## Golden Examples
-
-<!-- Before/after diffs, sample outputs, or reference implementations that make the expected result concrete. -->
-
-{golden_examples}
+DESIGN_RATIONALE_AND_EXAMPLES
 
 ## Verification
 
-<!-- Optional. Include when obvious build/test/lint commands exist. Omit section when not applicable. -->
+<!-- How the agent confirms its own work. Prefer CLI commands. When no CLI check applies, state what to inspect manually. -->
 
-{verification_commands_and_success_criteria}
+**Commands:**
+- `COMMAND` -- expected: SUCCESS_CRITERIA
 
-## Spec Change Log
-
-<!-- Appended by the review loop. Each entry: what changed, what triggered it, what bad state it avoids, KEEP instructions. Empty until first review cycle. -->
-
-## Notes
-
-<!-- Additional context, open questions resolved during planning, or anything that doesn't fit above. -->
-
-{notes}
+**Manual checks (if no CLI):**
+- WHAT_TO_INSPECT_AND_EXPECTED_STATE
