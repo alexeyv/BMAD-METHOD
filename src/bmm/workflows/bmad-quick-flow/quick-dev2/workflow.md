@@ -31,6 +31,16 @@ A specification is "Ready for Development" when:
 
 ---
 
+## SCOPE STANDARD
+
+A specification should target a **single user-facing goal** within **400–1200 words**:
+
+- **Single goal**: One cohesive feature, even if it spans multiple layers/files. Use the independent-verb test: if the intent has >=2 verbs that could ship independently ("add X AND refactor Y"), it's multi-goal.
+- **400–1200 words**: Optimal range for LLM consumption. Below 400 risks ambiguity; above 1200 risks context-rot in implementation agents.
+- **Neither limit is a gate.** Both are proposals with user override.
+
+---
+
 ## WORKFLOW ARCHITECTURE
 
 This uses **step-file architecture** for disciplined execution:

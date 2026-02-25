@@ -3,6 +3,7 @@ name: 'step-01-clarify-and-route'
 description: 'Capture intent, route to execution path'
 
 wipFile: '{implementation_artifacts}/tech-spec-wip.md'
+deferred_findings_file: '{output_dir}/deferred-findings.md'
 ---
 
 # Step 1: Clarify and Route
@@ -24,8 +25,13 @@ wipFile: '{implementation_artifacts}/tech-spec-wip.md'
 
 ## INSTRUCTIONS
 
-1. Clarify intent. Do not fantasize, do not leave open questions Keep asking the human until clear enough to implement. 
-2. Route:
+1. Clarify intent. Do not fantasize, do not leave open questions. Keep asking the human until clear enough to implement.
+2. Multi-goal check (SCOPE STANDARD). If intent has >=2 independent goals (verbs that could ship separately):
+   - Present detected child stories as a bullet list.
+   - `[S] Split — pick first story, note the rest  [K] Keep as single spec`
+   - **S**: Write child stories to `{deferred_findings_file}` under `## Deferred Stories`. Narrow scope to the first-mentioned goal. Continue routing.
+   - **K**: Proceed as-is.
+3. Route:
    - **One-shot** — trivial (~3 files). `{execution_mode}` = "one-shot". → Step 3.
    - **Plan-code-review** — normal. → Step 2.
    - **Full BMM** — too big. Recommend and exit.
