@@ -25,7 +25,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 2. Generate spec from `{templateFile}` into `{wipFile}`.
 3. Self-review against READY FOR DEVELOPMENT standard.
 4. If intent gaps exist, do not fantasize, do not leave open questions, ask the human.
-5. Word count check (SCOPE STANDARD). If spec exceeds ~1200 words:
+5. Word count check (SCOPE STANDARD). If spec exceeds 1200 words:
    - Show user the word count.
    - `[S] Split — carve off child stories  [K] Keep as-is`
    - **S**: Identify sections corresponding to independent child stories. Append them to `{deferred_work_file}`. Remove only those sections from the current spec — never compress prose to hit a word count. Continue to checkpoint.
@@ -33,7 +33,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ### CHECKPOINT 1
 
-Present summary (if word count exceeded ~1200 and user chose [K], echo the word count here). `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
+Present summary (if word count exceeded 1200 and user chose [K], echo the word count here). `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
 - **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Boundaries/Golden Examples. → Step 3.
 - **E**: Apply changes, re-present.
