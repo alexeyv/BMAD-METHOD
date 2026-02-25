@@ -561,7 +561,7 @@ LOAD and execute from: {project-root}/{{bmadFolderName}}/{{path}}
     const targetDir = this.installerConfig?.target_dir;
     if (!targetDir) return null;
 
-    const resolvedProject = path.resolve(projectDir);
+    const resolvedProject = await fs.realpath(path.resolve(projectDir));
     let current = path.dirname(resolvedProject);
     const root = path.parse(current).root;
 
