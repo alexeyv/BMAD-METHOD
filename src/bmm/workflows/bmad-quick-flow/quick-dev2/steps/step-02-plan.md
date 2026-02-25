@@ -5,7 +5,7 @@ description: 'Investigate, generate spec, present for approval'
 slug: kebab-cased strings are valid as a file name, based on the intent
 wipFile: '{implementation_artifacts}/tech-spec-[slug].md'
 templateFile: '{installed_path}/tech-spec-template.md'
-deferred_findings_file: '{output_dir}/deferred-findings.md'
+deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 ---
 
 # Step 2: Plan
@@ -28,7 +28,7 @@ deferred_findings_file: '{output_dir}/deferred-findings.md'
 5. Word count check (SCOPE STANDARD). If spec exceeds ~1200 words:
    - Show user the word count.
    - `[S] Split — carve off child stories  [K] Keep as-is`
-   - **S**: Identify sections corresponding to independent child stories. Write them to `{deferred_findings_file}` under `## Deferred Stories`. Remove only those sections from the current spec — never compress prose to hit a word count. Continue to checkpoint.
+   - **S**: Identify sections corresponding to independent child stories. Append them to `{deferred_work_file}`. Remove only those sections from the current spec — never compress prose to hit a word count. Continue to checkpoint.
    - **K**: Continue to checkpoint with full spec.
 
 ### CHECKPOINT 1
