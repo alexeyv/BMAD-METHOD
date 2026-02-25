@@ -25,15 +25,15 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 2. Generate spec from `{templateFile}` into `{wipFile}`.
 3. Self-review against READY FOR DEVELOPMENT standard.
 4. If intent gaps exist, do not fantasize, do not leave open questions, ask the human.
-5. Word count check (SCOPE STANDARD). If spec exceeds 1200 words:
-   - Show user the word count.
+5. Token count check (SCOPE STANDARD). If spec exceeds 1600 tokens:
+   - Show user the token count.
    - `[S] Split — carve off child stories  [K] Keep as-is`
    - **S**: Propose the split — name each child story and its goal. Append child stories to `{deferred_work_file}`. Rewrite the current spec to cover only the main goal — do not surgically carve sections out; regenerate the spec for the narrowed scope. Continue to checkpoint.
    - **K**: Continue to checkpoint with full spec.
 
 ### CHECKPOINT 1
 
-Present summary. If word count exceeded 1200 and user chose [K], include the word count in the summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
+Present summary. If token count exceeded 1600 and user chose [K], include the token count in the summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
 - **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
 - **E**: Apply changes, re-present.

@@ -4,9 +4,12 @@ slug: '{slug}'
 type: 'feature' # feature | bugfix | refactor | chore
 created: '{date}'
 status: 'draft' # draft | ready | in-progress | done
+context: [] # optional: project-wide standards/docs for orchestrator pre-load
 ---
 
-<!-- Target: 400–1000 words. Below 400 = ambiguous. Above 1000 = context rot risk. -->
+<!-- Target: 900–1300 tokens. Above 1600 = high risk of context rot.
+     Never over-specify "how" — use boundaries + examples instead.
+     Cohesive cross-layer stories (DB+BE+UI) stay in ONE file. -->
 
 # {title}
 
@@ -14,9 +17,7 @@ status: 'draft' # draft | ready | in-progress | done
 
 <!-- What is broken or missing, and why it matters. Then the high-level approach — the "what", not the "how". -->
 
-PROBLEM_AND_WHY_IT_MATTERS
-
-HIGH_LEVEL_APPROACH
+PROBLEM_WHY_IT_MATTERS_AND_HIGH_LEVEL_APPROACH
 
 ## Boundaries & Constraints
 
@@ -32,6 +33,7 @@ HIGH_LEVEL_APPROACH
 
 <!-- Agent-populated during planning. Annotated paths prevent blind codebase searching. -->
 
+- `FILE` -- ROLE_OR_RELEVANCE
 - `FILE` -- ROLE_OR_RELEVANCE
 
 ## I/O & Edge-Case Matrix
