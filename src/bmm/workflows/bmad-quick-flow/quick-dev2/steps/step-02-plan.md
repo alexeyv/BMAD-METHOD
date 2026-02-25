@@ -28,14 +28,14 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 5. Word count check (SCOPE STANDARD). If spec exceeds 1200 words:
    - Show user the word count.
    - `[S] Split — carve off child stories  [K] Keep as-is`
-   - **S**: Identify sections corresponding to independent child stories. Append them to `{deferred_work_file}`. Remove only those sections from the current spec — never compress prose to hit a word count. Continue to checkpoint.
+   - **S**: Propose the split — name each child story and its goal. Append child stories to `{deferred_work_file}`. Rewrite the current spec to cover only the main goal — do not surgically carve sections out; regenerate the spec for the narrowed scope. Continue to checkpoint.
    - **K**: Continue to checkpoint with full spec.
 
 ### CHECKPOINT 1
 
 Present summary. If word count exceeded 1200 and user chose [K], include the word count in the summary. `[A] Approve  [E] Edit  [F] Full BMM`. HALT.
 
-- **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Problem/Solution/Boundaries/Golden Examples. → Step 3.
+- **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
 - **E**: Apply changes, re-present.
 - **F**: Exit to full BMM.
 
