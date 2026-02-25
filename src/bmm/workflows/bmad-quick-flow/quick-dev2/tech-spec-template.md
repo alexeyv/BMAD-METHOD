@@ -4,7 +4,7 @@ slug: '{slug}'
 type: 'feature' # feature | bugfix | refactor | chore
 created: '{date}'
 status: 'draft' # draft | ready | in-progress | done
-context: [] # optional: project-wide standards/docs for orchestrator pre-load
+context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 ---
 
 <!-- Target: 900–1300 tokens. Above 1600 = high risk of context rot.
@@ -17,7 +17,9 @@ context: [] # optional: project-wide standards/docs for orchestrator pre-load
 
 <!-- What is broken or missing, and why it matters. Then the high-level approach — the "what", not the "how". -->
 
-PROBLEM_WHY_IT_MATTERS_AND_HIGH_LEVEL_APPROACH
+**Problem:** ONE_TO_TWO_SENTENCES
+
+**Approach:** ONE_TO_TWO_SENTENCES
 
 ## Boundaries & Constraints
 
@@ -26,6 +28,7 @@ PROBLEM_WHY_IT_MATTERS_AND_HIGH_LEVEL_APPROACH
 **Always:** INVARIANT_RULES
 
 **Ask First:** DECISIONS_REQUIRING_HUMAN_APPROVAL
+<!-- Agent: if any of these trigger during execution, HALT and ask the user before proceeding. -->
 
 **Never:** NON_GOALS_AND_FORBIDDEN_APPROACHES
 
@@ -38,7 +41,7 @@ PROBLEM_WHY_IT_MATTERS_AND_HIGH_LEVEL_APPROACH
 
 ## I/O & Edge-Case Matrix
 
-<!-- Omit section if task has no meaningful I/O scenarios. Table format exploits LLM attention strengths over prose. -->
+<!-- If no meaningful I/O scenarios exist, DELETE THIS ENTIRE SECTION. Do not write "N/A" or "None". -->
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
@@ -48,14 +51,18 @@ PROBLEM_WHY_IT_MATTERS_AND_HIGH_LEVEL_APPROACH
 ## Tasks & Acceptance
 
 <!-- Tasks: backtick-quoted file path -- action -- rationale. Prefer one task per file; group tightly-coupled changes when splitting would be artificial. -->
-<!-- AC: Given/When/Then. Covers system-level behaviors not captured by the I/O matrix. Do not duplicate I/O scenarios here. -->
+<!-- If an I/O Matrix is present, include a task to unit-test its edge cases. -->
 
+**Execution:**
 - [ ] `FILE` -- ACTION -- RATIONALE
-- [ ] AC: Given PRECONDITION, when ACTION, then EXPECTED_RESULT
+
+**Acceptance Criteria:**
+- Given PRECONDITION, when ACTION, then EXPECTED_RESULT
 
 ## Design Notes
 
-<!-- Optional. Design rationale and golden examples only when the approach is non-obvious. Keep examples to 5–10 lines. If straightforward, omit this section. -->
+<!-- If the approach is straightforward, DELETE THIS ENTIRE SECTION. Do not write "N/A" or "None". -->
+<!-- Design rationale and golden examples only when non-obvious. Keep examples to 5–10 lines. -->
 
 DESIGN_RATIONALE_AND_EXAMPLES
 
