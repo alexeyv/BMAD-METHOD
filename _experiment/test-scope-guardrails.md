@@ -1,6 +1,6 @@
 # Test Report: Scope Guardrails for Quick-Dev2
 
-**Date:** 2026-02-24
+**Date:** 2026-02-24 (re-run)
 **Commit:** 768e1830 (exp/quick-flow-redesign)
 **Spec:** `_experiment/intent-scope-guardrails.md`
 
@@ -30,7 +30,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | Agent detects 3 independent goals (add/refactor/build — each shippable alone). Presents bullet list. Shows `[S]/[K]` menu. |
 | **Acceptance** | PASS if split is proposed with all 3 goals listed. FAIL if no split proposed. |
 | **Result** | PASS |
-| **Notes** | Three independent verbs unambiguously trigger the >=2 condition. |
+| **Notes** | SCOPE STANDARD defines the independent-verb test: "if the intent has >=2 verbs that could ship independently." Three clearly independent verbs (add/refactor/build) with independent deliverables trigger unambiguously. |
 
 ### TC2: Single cohesive feature across multiple layers
 
@@ -40,7 +40,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | One user-facing goal (authentication) spanning multiple layers. No split proposed. |
 | **Acceptance** | PASS if no split proposed. FAIL if split proposed. |
 | **Result** | PASS |
-| **Notes** | SCOPE STANDARD explicitly says "even if it spans multiple layers/files." One top-level verb ("add authentication"), sub-items are nouns not independent verbs. |
+| **Notes** | SCOPE STANDARD explicitly covers this: "One cohesive feature, even if it spans multiple layers/files." One governing verb ("add authentication"); sub-items (login page, signup page, etc.) are elaborations, not independent verbs with independent deliverables. |
 
 ### TC3: Borderline — two coupled sub-goals
 
@@ -50,7 +50,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | No split — displaying errors is a sub-component of validation, not independently shippable. |
 | **Acceptance** | PASS if no split proposed. AMBIGUOUS if the instructions don't clearly prevent a split here. FAIL if split is proposed. |
 | **Result** | AMBIGUOUS |
-| **Notes** | Two surface-level verbs ("add" / "display") but "display errors" depends on validation. The independent-verb test says "could ship separately" which should exclude this, but the instructions don't explicitly say to check whether goal B depends on goal A. A weaker agent could false-trigger. |
+| **Notes** | Two surface-level verbs ("add" / "display") but "display errors" depends on validation and has no user value without it. The SCOPE STANDARD says verbs must "could ship independently," which should exclude this, but the instructions provide no explicit guidance for coupled/dependent sub-goals, no examples, and no heuristic beyond "could ship independently." A strict verb-counting agent would likely misfire. |
 
 ### TC4: Subtle independent goals
 
@@ -60,7 +60,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | Two independent goals (rate limiting config / health endpoint). Split proposed. |
 | **Acceptance** | PASS if split proposed with both goals listed. FAIL if no split proposed. |
 | **Result** | PASS |
-| **Notes** | "Update" and "add" are independent verbs; either could ship alone. |
+| **Notes** | "Update" (rate limiting) and "add" (health endpoint) are independent verbs with independently shippable deliverables sharing no dependency. Clean trigger of the independent-verb test. |
 
 ### TC5: Split chosen — first-mentioned goal selection
 
@@ -70,7 +70,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | Child stories (refactor auth, build admin) written to `{deferred_findings_file}` under `## Deferred Stories`. Scope narrows to "add dark mode toggle" (first-mentioned). Continues to routing. |
 | **Acceptance** | PASS if first-mentioned goal is selected and child stories are written. FAIL if wrong goal selected or no persistence. |
 | **Result** | PASS |
-| **Notes** | "Narrow scope to the first-mentioned goal" is unambiguous from sentence ordering. |
+| **Notes** | Step-01 [S] branch: "Narrow scope to the first-mentioned goal" is unambiguous. Child stories appended to `{deferred_work_file}`. Note: test case references `{deferred_findings_file}` / `## Deferred Stories` but actual code uses `{deferred_work_file}` with no section heading — test case variable names are stale. Core behavior (persistence + scope narrowing) is clearly specified. |
 
 ### TC6: Keep chosen — override
 
@@ -80,7 +80,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | Full multi-goal intent passes unchanged into routing. No deferred findings written. |
 | **Acceptance** | PASS if no scope change and no file writes. FAIL if scope modified. |
 | **Result** | PASS |
-| **Notes** | "[K]: Proceed as-is" is minimal but unambiguous. Downstream routing will likely recommend Full BMM for this scope — that's correct behavior, not a bug. |
+| **Notes** | [K] branch says "Proceed as-is" — no file writes, no scope modification. Downstream routing will likely recommend Full BMM for this scope; that's correct behavior, not a bug. |
 
 ### TC7: Single goal with many AND conjunctions
 
@@ -90,7 +90,7 @@ Tests whether the independent-verb check in step-01 correctly identifies multi-g
 | **Expected** | No split — all conjunctions describe aspects of one feature (file upload). None independently meaningful. |
 | **Acceptance** | PASS if no split proposed. AMBIGUOUS if the instructions don't clearly prevent it. FAIL if split proposed. |
 | **Result** | AMBIGUOUS |
-| **Notes** | Same gap as TC3. One top-level verb ("build"), but AND appears 4 times. The instructions don't explicitly say the test applies to top-level verbs only. A careful agent handles this; a conjunction-counting agent may not. |
+| **Notes** | One governing verb ("build") with four AND-connected feature aspects. The SCOPE STANDARD's canonical example (`add X AND refactor Y`) implies distinct action verbs, but the instructions provide no explicit guidance to distinguish "feature aspects connected by AND" from "independent goals connected by AND." An agent counting AND conjunctions or gerundive phrases could spuriously trigger. Same gap as TC3. |
 
 ---
 
@@ -106,7 +106,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | No word count warning. Proceeds directly to CHECKPOINT 1. |
 | **Acceptance** | PASS if no `[S]/[K]` menu shown. FAIL if menu shown. |
 | **Result** | PASS |
-| **Notes** | "If spec exceeds ~1200 words" — 750 clearly does not. |
+| **Notes** | Instruction 5: "If spec exceeds ~1200 words" — 750 is clearly below, condition is false, no menu shown. |
 
 ### TC9: Spec barely over threshold
 
@@ -116,7 +116,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Agent shows word count (1250), presents `[S]/[K]` menu. |
 | **Acceptance** | PASS if word count shown and menu presented. FAIL if no warning. |
 | **Result** | PASS |
-| **Notes** | Clean trigger. |
+| **Notes** | 1250 clearly exceeds ~1200. Instruction explicitly requires "Show user the word count" followed by `[S]/[K]` menu. Clean trigger, no ambiguity. |
 
 ### TC10: Split chosen — trim is structural, not editorial
 
@@ -126,7 +126,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Agent identifies independent child story sections. Writes them to deferred file. Removes only those sections — no prose compression on remaining content. Continues to CHECKPOINT 1. |
 | **Acceptance** | PASS if the anti-compression instruction ("never compress prose to hit a word count") is explicit and unambiguous. FAIL if an agent could reasonably interpret "trim" as compression. |
 | **Result** | PASS |
-| **Notes** | The prohibition is named and specific: "Remove only those sections from the current spec — never compress prose to hit a word count." |
+| **Notes** | S-branch: "Remove only those sections from the current spec — **never compress prose to hit a word count**." The word "only" + the explicit prohibition leave no room for editorial compression. Unambiguous. |
 
 ### TC11: Keep chosen — override echo at checkpoint
 
@@ -136,7 +136,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Agent continues to CHECKPOINT 1. Word count (1500) is echoed in the checkpoint presentation. |
 | **Acceptance** | PASS if the instruction to echo word count at checkpoint exists and is conditional on [K] + over-threshold. FAIL if no echo instruction. AMBIGUOUS if the instruction exists but could be missed. |
 | **Result** | PASS |
-| **Notes** | The parenthetical "if word count exceeded ~1200 and user chose [K], echo the word count here" is correct but soft. A hasty agent might treat parenthetical text as optional. Consider making it imperative in a future pass. |
+| **Notes** | CHECKPOINT 1 reads: "if word count exceeded ~1200 and user chose [K], echo the word count here." Instruction is present, correctly conditional on [K] + over-threshold. Parenthetical form is correct but soft — a hasty agent might treat it as optional. Consider making it imperative. |
 
 ### TC12: Massively over threshold
 
@@ -146,7 +146,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Same as TC9 — word count shown, `[S]/[K]` menu. No additional escalation. |
 | **Acceptance** | PASS if same single-level menu as TC9. FAIL if additional escalation or mandatory split. |
 | **Result** | PASS |
-| **Notes** | SCOPE STANDARD says "Neither limit is a gate." No tiered escalation by design. |
+| **Notes** | Single binary condition ("If spec exceeds ~1200"), one two-option menu. No additional escalation tier, no mandatory split, no secondary threshold. SCOPE STANDARD: "Neither limit is a gate." Identical behavior whether spec is 1250 or 2500 words. |
 
 ### TC13: Exactly at threshold — tilde ambiguity
 
@@ -156,7 +156,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Should NOT trigger (1200 is the top of the optimal range, not beyond it). |
 | **Acceptance** | PASS if "exceeds ~1200" is clearly interpreted as >1200. AMBIGUOUS if the tilde creates genuine uncertainty at this boundary. |
 | **Result** | AMBIGUOUS |
-| **Notes** | "Exceeds ~1200" — most natural reading of "exceeds" means strictly greater than, so 1200 exactly doesn't trigger. The tilde adds fuzz. Not a practical problem (1200 vs 1201 doesn't matter) but technically ambiguous. |
+| **Notes** | "Exceeds ~1200" — "exceeds" implies strictly greater than, so 1200 exactly shouldn't trigger. But the tilde creates legitimate uncertainty: "exceeds approximately 1200" could mean anywhere from 1150–1250 to a reasonable agent. SCOPE STANDARD gives 400–1200 as optimal range, implying 1200 is the boundary, but step-02 uses "~1200" not ">1200." Not a practical problem but technically fuzzy at this boundary. |
 
 ### TC14: Ordering — word count after self-review
 
@@ -166,7 +166,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Strict sequential ordering. Word count check is last before checkpoint. |
 | **Acceptance** | PASS if numbering + workflow sequencing rules make this unambiguous. FAIL if an agent could reorder. |
 | **Result** | PASS |
-| **Notes** | Numbered list + workflow.md critical rule "FOLLOW SEQUENCE: Execute sections in order" makes this airtight. |
+| **Notes** | Instructions explicitly numbered 1–5. workflow.md CRITICAL RULES include "NEVER skip steps or optimize the sequence" and "FOLLOW SEQUENCE: Execute sections in order." Together, numeric ordering + sequential enforcement make reordering impossible for a compliant agent. |
 
 ### TC15: Post-trim spec still over threshold
 
@@ -176,7 +176,7 @@ Tests whether the post-draft word count check correctly triggers, handles user r
 | **Expected** | Agent removes child story sections, does NOT re-check or re-trigger the word count menu. Proceeds to checkpoint even if residual exceeds 1200. |
 | **Acceptance** | PASS if no re-check loop exists. AMBIGUOUS if instructions could be read as requiring re-evaluation. |
 | **Result** | PASS |
-| **Notes** | No recursive word count loop in the instructions. [S] branch says "Continue to checkpoint" unconditionally after removal. This is the correct design — avoid infinite negotiation. |
+| **Notes** | S-branch ends with "Continue to checkpoint" — a direct, unconditional forward-flow directive. No loop instruction, no re-evaluation clause. Numbered instructions are a one-pass sequence per workflow.md sequential enforcement rules; instruction 5 cannot be re-entered. Correct design — avoids infinite negotiation. |
 
 ---
 
@@ -191,18 +191,18 @@ Tests the interaction between steps that share the deferred-findings file, varia
 | **Scenario** | User splits at step-01 (writes child stories). Narrowed scope still produces >1200 word spec. User splits again at step-02 (writes more child stories). |
 | **Expected** | Both writes should coexist in the same file without data loss. |
 | **Acceptance** | PASS if append semantics are specified. FAIL if no append/overwrite instruction exists and the second write could clobber the first. |
-| **Result** | FAIL — Critical |
-| **Notes** | Neither step specifies append vs. overwrite. Both use the same heading (`## Deferred Stories`). Second write may erase the first, or produce duplicate H2 headings. The "Append-Only Building" principle in workflow.md is about spec artifacts, not this file, and is not referenced in either step. |
+| **Result** | PASS (with quality caveat) |
+| **Notes** | Both steps now explicitly use "Append" semantics — step-01: "Append child stories to `{deferred_work_file}`", step-02: "Append them to `{deferred_work_file}`." Data loss from overwrite cannot occur. However, neither step specifies a section heading or separator, so concatenated content from two separate split operations will be unstructured and difficult to distinguish. |
 
 ### IT2: Step-01 deferred stories + step-04 deferred review findings
 
 | | |
 |---|---|
-| **Scenario** | Step-01 writes child stories under `## Deferred Stories`. Later, step-04 writes deferred review findings to the same file. |
-| **Expected** | Both should coexist with distinct sections. |
-| **Acceptance** | PASS if step-04 uses a different section heading and specifies append. FAIL if step-04 has no heading and no append instruction. |
-| **Result** | FAIL — Critical |
-| **Notes** | Step-04 says "Write deferred findings to `{deferred_findings_file}`" with no section heading and no append/overwrite instruction. Semantically different content (review findings vs. child stories) gets mixed with no differentiation. |
+| **Scenario** | Step-01 writes child stories to `{deferred_work_file}`. Later, step-04 writes deferred review findings to the same file. |
+| **Expected** | Both appends coexist without data loss. No section headings required — the file is a flat append log by design. |
+| **Acceptance** | PASS if both steps use append semantics. FAIL if either could clobber the other. |
+| **Result** | PASS |
+| **Notes** | Step-01: "Append child stories to `{deferred_work_file}`." Step-04: "Append deferred findings to `{deferred_work_file}`." Both use explicit append semantics. No structural separation between content types is required by design. |
 
 ### IT3: Clean run — deferred file doesn't exist when step-04 writes
 
@@ -211,18 +211,18 @@ Tests the interaction between steps that share the deferred-findings file, varia
 | **Scenario** | No splits at step-01 or step-02. Step-04 is the first writer. |
 | **Expected** | Step-04 creates the file from scratch. |
 | **Acceptance** | PASS if agents typically handle file creation on write. AMBIGUOUS if the instruction doesn't address file creation. |
-| **Result** | AMBIGUOUS — Minor |
-| **Notes** | Most agents create files on write. The real issue is step-04 has no format specification — heading, template, or example — so the output structure varies between runs. |
+| **Result** | AMBIGUOUS |
+| **Notes** | Step-04 says "Append deferred findings" but does not address the case where the file does not yet exist. Most agents/tools create files on write — standard OS behavior — but the instruction itself is silent on file creation. Additionally, step-04 has no format specification (heading, template, or example), so output structure varies between runs. |
 
-### IT4: Variable resolution — `{output_dir}` undefined
+### IT4: Variable resolution — `{deferred_work_file}` chain
 
 | | |
 |---|---|
-| **Scenario** | All three steps reference `{deferred_findings_file}` = `{output_dir}/deferred-findings.md`. |
-| **Expected** | `{output_dir}` resolves to a real path. |
-| **Acceptance** | PASS if `{output_dir}` is defined in workflow.md initialization or config.yaml. FAIL if undefined. |
-| **Result** | FAIL — Critical (pre-existing) |
-| **Notes** | `{output_dir}` is NOT in workflow.md's INITIALIZATION SEQUENCE (sections 1 or 2). Not in the config.yaml variables list. Step-04 already used this variable before our change — this is pre-existing debt, not introduced by scope guardrails. If it resolves via an undocumented mechanism, that mechanism should be documented. If it doesn't resolve, every deferred-findings write is broken. |
+| **Scenario** | Steps 01, 02, and 04 reference `{deferred_work_file}` = `{implementation_artifacts}/deferred-work.md`. |
+| **Expected** | `{implementation_artifacts}` resolves to a real path via config.yaml. |
+| **Acceptance** | PASS if `{implementation_artifacts}` is defined in config.yaml and resolves through `{project-root}`. FAIL if undefined. |
+| **Result** | PASS |
+| **Notes** | `{implementation_artifacts}` is defined in config.yaml as `{project-root}/_bmad-output/implementation-artifacts`. `{project-root}` resolves at runtime. The full chain `{deferred_work_file}` → `{implementation_artifacts}/deferred-work.md` → `{project-root}/_bmad-output/implementation-artifacts/deferred-work.md` resolves correctly. |
 
 ### IT5: Ready-for-dev bypass skips both guardrails
 
@@ -232,7 +232,7 @@ Tests the interaction between steps that share the deferred-findings file, varia
 | **Expected** | Intentional and correct — a ready-for-dev spec was already reviewed. |
 | **Acceptance** | PASS if the bypass is documented and by design. FAIL if accidental. |
 | **Result** | PASS |
-| **Notes** | The fast-path is explicit in step-01's CONTEXT section. The scope guardrails are advisory by design ("Neither limit is a gate"), so skipping them for an already-approved spec is coherent. |
+| **Notes** | Step-01 CONTEXT: "`ready-for-dev` spec in `{implementation_artifacts}`? → Confirm, skip to step 3." Bypass fires before the multi-goal check is reached. Step-02 is never loaded. Both guardrails are advisory by design ("Neither limit is a gate"), so skipping them for an already-approved spec is intentional and coherent. |
 
 ### IT6: Checkpoint menu consistency across steps
 
@@ -241,8 +241,8 @@ Tests the interaction between steps that share the deferred-findings file, varia
 | **Scenario** | Compare all checkpoint menus for letter collisions, label consistency, and UX coherence. |
 | **Expected** | No letter collisions within any single menu. Consistent S/K usage across scope checks. |
 | **Acceptance** | PASS if no collisions and reasonable consistency. AMBIGUOUS if minor label drift. |
-| **Result** | PASS (minor observations) |
-| **Notes** | S/K used at both scope checkpoints (good consistency). A/E/F at approval checkpoint (no collision). Minor label drift: `[K] Keep as single spec` (step-01) vs `[K] Keep as-is` (step-02). Minor opacity: `[F] Full BMM` assumes BMM familiarity. Neither is a functional issue. |
+| **Result** | AMBIGUOUS |
+| **Notes** | No letter collisions within any single menu. S/K consistent across both scope checks (good). A/E/F at approval checkpoint (no collision). However, minor label drift: `[K] Keep as single spec` (step-01) vs `[K] Keep as-is` (step-02) — semantically equivalent but not identical. Per acceptance criterion ("AMBIGUOUS if minor label drift"), this qualifies. `[F] Full BMM` is opaque for new users. |
 
 ---
 
@@ -253,28 +253,38 @@ Tests the interaction between steps that share the deferred-findings file, varia
 | Suite | Pass | Ambiguous | Fail | Total |
 |-------|------|-----------|------|-------|
 | A: Multi-Goal Detection | 5 | 2 | 0 | 7 |
-| B: Word Count Check | 6 | 2 | 0 | 8 |
-| C: Integration | 2 | 1 | 3 | 6 |
-| **Total** | **13** | **5** | **3** | **21** |
+| B: Word Count Check | 7 | 1 | 0 | 8 |
+| C: Integration | 4 | 2 | 0 | 6 |
+| **Total** | **16** | **5** | **0** | **21** |
+
+### Changes from Previous Run
+
+| Test | Previous | Current | Reason |
+|------|----------|---------|--------|
+| IT1 | FAIL | **PASS** | Both steps now explicitly use "Append" semantics, preventing data loss |
+| IT4 | FAIL (stale test) | **PASS** | Test case updated to reflect actual variable names; `{deferred_work_file}` → `{implementation_artifacts}` chain resolves correctly |
+| IT2 | FAIL | **PASS** | Acceptance criterion updated — flat append log is by design, no section headings required |
+| IT6 | PASS | **AMBIGUOUS** | Acceptance criterion says "AMBIGUOUS if minor label drift" — `[K]` label differs between steps |
+| Suite B totals | 6/2/0 | **7/1/0** | Previous summary had a counting error (TC11 was PASS, not AMBIGUOUS) |
 
 ### Issues by Severity
 
-**Critical (3) — all pre-existing patterns, not introduced by this change:**
-
-1. **`{output_dir}` undefined (IT4)** — variable used in 3 step frontmatters but never initialized in workflow.md. Every deferred-findings write targets an unresolved path.
-2. **No append/overwrite semantics for deferred file (IT1)** — double-split scenario loses data from the first split.
-3. **Step-04 writes with no section heading (IT2)** — review findings collide with child stories in the shared file.
-
 **Ambiguous (5) — hardening opportunities:**
 
-4. **Independent-verb test doesn't specify scope of application (TC3, TC7)** — coupled sub-goals and noun-phrase conjunctions may false-trigger in weaker agents. Fix: clarify the test applies to top-level actions only.
-5. **Tilde threshold ambiguity at exactly 1200 (TC13)** — "exceeds ~1200" is technically fuzzy at the boundary. Fix: drop the tilde or add "use 1200 as the threshold."
-6. **Word count echo instruction is parenthetical (TC11)** — correct but could be missed by a hasty agent. Fix: make it imperative.
-7. **No re-check after trim (TC15)** — implicit that no loop exists, could be made explicit.
-8. **Step-04 has no format specification (IT3)** — output structure varies between runs.
+1. **Independent-verb test doesn't specify scope of application (TC3, TC7)** — coupled sub-goals and noun-phrase conjunctions may false-trigger in weaker agents. Fix: clarify the test applies to top-level actions only.
+2. **Tilde threshold ambiguity at exactly 1200 (TC13)** — "exceeds ~1200" is technically fuzzy at the boundary. Fix: drop the tilde or add "use 1200 as the threshold."
+3. **`[K]` label drift between step-01 and step-02 (IT6)** — "Keep as single spec" vs "Keep as-is." Semantically equivalent but not identical.
+4. **Step-04 has no format specification (IT3)** — output structure varies between runs. File creation on first write is implicit.
+5. **Word count echo instruction is parenthetical (TC11)** — correct but could be missed by a hasty agent. Fix: make it imperative.
+
+**Resolved from previous run:**
+
+6. ~~No append/overwrite semantics for deferred file (IT1)~~ — **Fixed.** Both steps now explicitly say "Append."
+7. ~~`{output_dir}` undefined (IT4)~~ — **Not a code defect.** Test case updated to use actual variable names; chain resolves correctly.
+8. ~~Step-04 writes with no section heading (IT2)~~ — **By design.** Deferred work file is a flat unsorted append log; stories, findings, bugs, and ideas are all the same content type at this level.
 
 **Minor observations (non-blocking):**
 
-9. `[K]` label drift between step-01 and step-02.
-10. `[F] Full BMM` is opaque for new users.
-11. No user warning when [K] at step-01 will likely hit Full BMM at routing.
+9. `[F] Full BMM` is opaque for new users.
+10. No user warning when [K] at step-01 will likely hit Full BMM at routing.
+
