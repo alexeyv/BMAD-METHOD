@@ -34,17 +34,15 @@ class ConfigDrivenIdeSetup extends BaseIdeSetup {
    * @returns {Promise<Object>} Setup result
    */
   async setup(projectDir, bmadDir, options = {}) {
-    if (!options.silent) await prompts.log.info(`Setting up ${this.name}...`);
-
     // Check for BMAD files in ancestor directories that would cause duplicates
     if (this.installerConfig?.ancestor_conflict_check) {
       const conflict = await this.findAncestorConflict(projectDir);
       if (conflict) {
         await prompts.log.error(
-          `Found existing BMAD commands in ancestor directory: ${conflict}\n` +
+          `Found existing BMAD commands in ancestor installation: ${conflict}\n` +
             `  ${this.name} inherits commands from parent directories, so this would cause duplicates.\n` +
             `  Please remove the BMAD files from that directory first:\n` +
-            `    rm "${conflict}/"bmad*`,
+            `    rm -rf "${conflict}"/bmad*`,
         );
         return {
           success: false,
@@ -54,6 +52,8 @@ class ConfigDrivenIdeSetup extends BaseIdeSetup {
         };
       }
     }
+
+    if (!options.silent) await prompts.log.info(`Setting up ${this.name}...`);
 
     // Clean up any old BMAD installation first
     await this.cleanup(projectDir, options);
@@ -570,7 +570,7 @@ LOAD and execute from: {project-root}/{{bmadFolderName}}/{{path}}
       try {
         if (await fs.pathExists(candidatePath)) {
           const entries = await fs.readdir(candidatePath);
-          const hasBmad = entries.some((e) => typeof e === 'string' && e.startsWith('bmad'));
+          const hasBmad = entries.some((e) => typeof e === 'string' && e.toLowerCase().startsWith('bmad'));
           if (hasBmad) {
             return candidatePath;
           }

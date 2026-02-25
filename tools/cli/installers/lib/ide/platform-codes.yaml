@@ -198,6 +198,9 @@ platforms:
 #       artifact_types: [agents, workflows, tasks, tools]
 #   artifact_types: array (optional)      # Filter which artifacts to install (default: all)
 #   skip_existing: boolean (optional)     # Skip files that already exist (default: false)
+#   ancestor_conflict_check: boolean (optional) # Refuse install when ancestor dir has BMAD files
+#                                                # in the same target_dir (for IDEs that inherit
+#                                                # commands from parent directories)
 
 # ============================================================================
 # Platform Categories
