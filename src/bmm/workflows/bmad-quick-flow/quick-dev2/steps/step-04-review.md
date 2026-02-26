@@ -35,4 +35,4 @@ specLoopCap: 5
 
 ## NEXT
 
-`{installed_path}/steps/step-05-present.md`
+Read fully and follow `{installed_path}/steps/step-05-present.md`
