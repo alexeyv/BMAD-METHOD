@@ -32,7 +32,7 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 
 **Never:** NON_GOALS_AND_FORBIDDEN_APPROACHES
 
-## Context & Code Map
+## Code Map
 
 <!-- Agent-populated during planning. Annotated paths prevent blind codebase searching. -->
 
