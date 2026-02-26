@@ -43,7 +43,7 @@ Do NOT `git add` anything — this is read-only inspection.
 
 ### Classify
 
-1. Deduplicate findings across both reviews (or from the single review for one-shot).
+1. Deduplicate all review findings.
 2. Classify each finding. The first three categories are **this story's problem** — caused or exposed by the current change. The last two are **not this story's problem**. When in doubt between bad_spec and patch, prefer bad_spec — a spec-level fix produces coherent code, a code-level patch produces a patchwork quilt.
    - **intent_gap** — caused by the change; wouldn't happen if intent was clear. Intent is expensive to patch — loop back to the human.
    - **bad_spec** — caused by the change, including direct deviations from spec. The spec should have been clear enough to prevent it. When torn between bad_spec and patch, prefer bad_spec.
