@@ -9,8 +9,6 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 # Step 2: Plan
 
-**Step 2 of 5 — Autonomous until checkpoint**
-
 ## RULES
 
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`

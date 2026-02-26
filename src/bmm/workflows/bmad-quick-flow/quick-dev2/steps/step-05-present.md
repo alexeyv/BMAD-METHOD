@@ -5,8 +5,6 @@ description: 'Present findings, get approval, create PR'
 
 # Step 5: Present
 
-**Step 5 of 5 — Final**
-
 ## RULES
 
 - NEVER auto-push.
