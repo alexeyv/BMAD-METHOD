@@ -1,6 +1,5 @@
 ---
 title: '{title}'
-slug: '{slug}'
 type: 'feature' # feature | bugfix | refactor | chore
 created: '{date}'
 status: 'draft' # draft | ready | in-progress | done
