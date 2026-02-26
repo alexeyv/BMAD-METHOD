@@ -88,7 +88,6 @@ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `
 - `installed_path` = `{project-root}/_bmad/bmm/workflows/bmad-quick-flow/quick-dev2`
 - `templateFile` = `{installed_path}/tech-spec-template.md`
 - `wipFile` = `{implementation_artifacts}/tech-spec-wip.md`
-- `tasksDir` = `{implementation_artifacts}/tasks`
 
 ### 3. First Step Execution
 
