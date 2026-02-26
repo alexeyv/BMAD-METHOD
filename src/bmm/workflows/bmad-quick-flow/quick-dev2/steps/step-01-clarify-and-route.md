@@ -13,7 +13,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 ## RULES
 
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-- The skill argument IS the intent — not a hint.
+- The prompt that triggered this workflow IS the intent — not a hint.
 - Do NOT assume you start from zero.
 
 ## CONTEXT
@@ -25,16 +25,15 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ## INSTRUCTIONS
 
-1. Clarify intent. Do not fantasize, do not leave open questions. Keep asking the human until clear enough to implement.
-2. Multi-goal check (SCOPE STANDARD). If intent has >=2 top-level independent shippable deliverables (each could ship as its own PR). Never count surface verbs, "and" conjunctions, or sub-components of one feature:
-   - Present detected child stories as a bullet list.
-   - `[S] Split — pick first story, note the rest  [K] Keep as-is`
-   - **S**: Append child stories to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
-   - **K**: Proceed as-is.
+1. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
+2. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
+   - Present detected distinct goals as a bullet list.
+   - HALT and ask human: `[S] Split — pick first goal, defer the rest` | `[K] Keep as-is`
+   - On **S**: Append deferred goals to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
+   - On **K**: Proceed as-is.
 3. Route:
    - **One-shot** — trivial (~3 files). `{execution_mode}` = "one-shot". → Step 3.
    - **Plan-code-review** — normal. → Step 2.
-   - **Full BMM** — too big. Recommend and exit.
    - Ambiguous? Default to plan-code-review.
 
 ---
