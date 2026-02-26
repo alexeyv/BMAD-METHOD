@@ -20,7 +20,6 @@ spec_file: '' # set at runtime before leaving this step
 - `ready-for-dev` spec in `{implementation_artifacts}`? → Set `spec_file` to its path, set `execution_mode = "plan-code-review"`, confirm with user, skip to step 3.
 - `{wipFile}` exists? → Offer resume or archive.
 
----
 
 ## INSTRUCTIONS
 
@@ -39,7 +38,6 @@ spec_file: '' # set at runtime before leaving this step
    - **Plan-code-review** — normal. `execution_mode = "plan-code-review"`. → Step 2.
    - Ambiguous? Default to plan-code-review.
 
----
 
 ## NEXT
 

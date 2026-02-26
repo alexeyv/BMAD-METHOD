@@ -14,8 +14,6 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
 - No intermediate approvals.
 
----
-
 ## INSTRUCTIONS
 
 1. Investigate codebase. _Isolate deep exploration in sub-agents/tasks where available. To prevent context snowballing, instruct subagents to give you distilled summaries only._
@@ -35,7 +33,6 @@ Present summary. If token count exceeded 1600 and user chose [K], include the to
 - **A**: Rename `{wipFile}` to `{spec_file}`, set status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
 - **E**: Apply changes, then return to CHECKPOINT 1.
 
----
 
 ## NEXT
 

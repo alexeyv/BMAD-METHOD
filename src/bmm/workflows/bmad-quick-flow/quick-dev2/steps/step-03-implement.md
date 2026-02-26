@@ -11,8 +11,6 @@ description: 'Execute implementation directly or via sub-agent. Local only.'
 - No push. No remote ops.
 - Sequential execution only.
 
----
-
 ## INSTRUCTIONS
 
 ### Baseline Snapshot (plan-code-review only)
@@ -28,7 +26,6 @@ Before making any changes, capture the baseline into `{spec_file}` frontmatter:
 
 Otherwise (`execution_mode = "plan-code-review"`): hand `{spec_file}` to a sub-agent/task and let it implement.
 
----
 
 ## NEXT
 
