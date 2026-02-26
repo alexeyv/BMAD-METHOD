@@ -4,6 +4,7 @@ description: 'Capture intent, route to execution path'
 
 wipFile: '{implementation_artifacts}/tech-spec-wip.md'
 deferred_work_file: '{implementation_artifacts}/deferred-work.md'
+spec_file: '' # set at runtime before leaving this step
 ---
 
 # Step 1: Clarify and Route
@@ -18,7 +19,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ## CONTEXT
 
-- `ready-for-dev` spec in `{implementation_artifacts}`? → Confirm, skip to step 3.
+- `ready-for-dev` spec in `{implementation_artifacts}`? → Set `spec_file` to its path, confirm with user, skip to step 3.
 - `{wipFile}` exists? → Offer resume or archive.
 
 ---
@@ -31,7 +32,11 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
    - HALT and ask human: `[S] Split — pick first goal, defer the rest` | `[K] Keep as-is`
    - On **S**: Append deferred goals to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
    - On **K**: Proceed as-is.
-3. Route:
+3. Generate `spec_file` path:
+   - Derive a valid kebab-case slug from the clarified intent.
+   - If `{implementation_artifacts}/tech-spec-{slug}.md` already exists, append `-2`, `-3`, etc.
+   - Set `spec_file` = `{implementation_artifacts}/tech-spec-{slug}.md`.
+4. Route:
    - **One-shot** — trivial (~3 files). `execution_mode = "one-shot"`. → Step 3.
    - **Plan-code-review** — normal. `execution_mode = "plan-code-review"`. → Step 2.
    - Ambiguous? Default to plan-code-review.
