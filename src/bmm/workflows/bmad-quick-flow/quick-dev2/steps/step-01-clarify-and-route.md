@@ -19,7 +19,7 @@ spec_file: '' # set at runtime before leaving this step
 
 ## CONTEXT
 
-- `ready-for-dev` spec in `{implementation_artifacts}`? → Set `spec_file` to its path, confirm with user, skip to step 3.
+- `ready-for-dev` spec in `{implementation_artifacts}`? → Set `spec_file` to its path, set `execution_mode = "plan-code-review"`, confirm with user, skip to step 3.
 - `{wipFile}` exists? → Offer resume or archive.
 
 ---
