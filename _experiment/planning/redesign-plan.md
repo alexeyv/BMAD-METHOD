@@ -4,38 +4,13 @@
 
 Two variants of the same flow, same design principles:
 
-- **Quick-flow (generic)** — this document. Platform-agnostic. File-based task sharding. The only capability question it may ask the platform is "can you use subagents?" (and even that took half a day to word correctly across platforms). Everything else is file-based.
-- **Quick-flow CC (future work)** — Claude Code-native. Uses TaskCreate/TaskGet for verbatim task prompt injection, proper context-isolated subagent spawning, and other platform-specific tooling. Same phases, same classification logic, native implementation.
+- Quick-flow (platform-agnostic) — "use subagents if you can",
+file-based task sharding and everything else. MVP.
+
+- Quick-flow CC (Claude code) — TaskCreate/TaskGet for verbatim task prompt injection, proper context-isolated subagent spawning, and other platform-specific tooling. Same phases, same classification logic, native implementation. DEFERRED TO AFTER MVP.
 
 ## Deliverable
-
-Replace `src/bmm/workflows/bmad-quick-flow/quick-spec/` and `src/bmm/workflows/bmad-quick-flow/quick-dev/` with a single unified `src/bmm/workflows/bmad-quick-flow/` workflow. Update the agent definition and Claude Code skill entry points accordingly. This spec covers the generic variant.
-
-## File Plan
-
-### Delete
-
-- `src/bmm/workflows/bmad-quick-flow/quick-spec/` (entire directory)
-- `src/bmm/workflows/bmad-quick-flow/quick-dev/` (entire directory)
-
-### Create
-
-```
-src/bmm/workflows/bmad-quick-flow/
-  workflow.md                     # Entry point — routing + orchestration
-  tech-spec-template.md           # Lighter-weight spec template (revised)
-  steps/
-    step-01-clarify-and-route.md  # Intent clarification + scope routing
-    step-02-plan.md               # Investigation + spec generation (CHECKPOINT 1)
-    step-03-implement.md          # Code derivation + auto version control
-    step-04-review.md             # Adversarial review + classification + optional spec loop
-    step-05-present.md            # Final findings to human (CHECKPOINT 2) + PR creation
-```
-
-### Modify
-
-- `src/bmm/agents/quick-flow-solo-dev.agent.yaml` — replace QS/QD menu triggers with single QF trigger
-- Claude Code skill entry points (if separate from agent definition)
+`src/bmm/workflows/bmad-quick-flow/quick-dev2/` workflow.
 
 ## Flow Architecture
 
@@ -44,16 +19,15 @@ src/bmm/workflows/bmad-quick-flow/
 Exactly two for the plan-code-review route:
 
 1. **End of Plan (step-02)** — "Here's the spec. Approve, edit, or redirect to full BMM."
-2. **End of Review (step-05)** — "Here are the classified findings. Approve the final state."
-
-Everything between checkpoint 1 and checkpoint 2 is autonomous. No [A][P][C] gates. Advanced Elicitation and Party Mode remain invocable by the human at any time (as interrupts, not as gates in the critical path) but the flow never stops to offer them.
+```markdown
+2. **Final Result (step-06)** — "Review complete. Here is the final state. Approve to finish."
+```
 
 ### Step 1 — Clarify and Route
-
-Combines the old quick-dev mode-detection with quick-spec's understand phase. Single step because the routing decision depends on understanding the intent.
+Capture the tent and decide whether to onep-shot, split into multiple stories, or plan-code-review. 
 
 **On launch:**
-- Load config, project-context.md (if exists), CLAUDE.md / memory (if exists)
+- Load config, project-context.md (if exists)
 - Check for existing WIP file → offer resume or archive
 - Check for `ready-for-dev` tech spec → skip directly to step 3 (this was a bug in the old flow)
 
