@@ -2,9 +2,8 @@
 name: 'step-02-plan'
 description: 'Investigate, generate spec, present for approval'
 
-slug: kebab-cased strings are valid as a file name, based on the intent
-wipFile: '{implementation_artifacts}/tech-spec-[slug].md'
 templateFile: '{installed_path}/tech-spec-template.md'
+wipFile: '{implementation_artifacts}/tech-spec-wip.md'
 deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 ---
 
@@ -21,10 +20,10 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ## INSTRUCTIONS
 
-1. Investigate codebase. _Isolate deep exploration in sub-agents/tasks where available. Return distilled summaries only to prevent context snowballing._
-2. Generate spec from `{templateFile}` into `{wipFile}`.
+1. Investigate codebase. _Isolate deep exploration in sub-agents/tasks where available. To prevent context snowballing, instruct subagents to give you distilled summaries only._
+2. Read `{templateFile}` fully. Fill it out based on the intent and investigation, and write the result to `{wipFile}`.
 3. Self-review against READY FOR DEVELOPMENT standard.
-4. If intent gaps exist, do not fantasize, do not leave open questions, ask the human.
+4. If intent gaps exist, do not fantasize, do not leave open questions, HALT and ask the human.
 5. Token count check (see SCOPE STANDARD). If spec exceeds 1600 tokens:
    - Show user the token count.
    - HALT and ask human: `[S] Split — carve off secondary goals` | `[K] Keep as-is`
@@ -33,13 +32,13 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ### CHECKPOINT 1
 
-Present summary. If token count exceeded 1600 and user chose [K], include the token count in the summary. HALT and ask human: `[A] Approve` | `[E] Edit`
+Present summary. If token count exceeded 1600 and user chose [K], include the token count and explain why it may be a problem. HALT and ask human: `[A] Approve` | `[E] Edit`
 
-- **A**: Rename to `tech-spec-{slug}.md`, status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
-- **E**: Apply changes, re-present.
+- **A**: Generate a valid kebab-case `{slug}` from the intent. If `{implementation_artifacts}/tech-spec-{slug}.md` already exists, append `-2`, `-3`, etc. Rename `{wipFile}` to `{implementation_artifacts}/tech-spec-{slug}.md`, set status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
+- **E**: Apply changes, then return to CHECKPOINT 1.
 
 ---
 
 ## NEXT
 
-`{installed_path}/steps/step-03-implement.md`
+Read fully and follow `{installed_path}/steps/step-03-implement.md`

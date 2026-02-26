@@ -40,5 +40,5 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ## NEXT
 
-- One-shot / ready-for-dev: `{installed_path}/steps/step-03-implement.md`
-- Plan-code-review: `{installed_path}/steps/step-02-plan.md`
+- One-shot / ready-for-dev: Read fully and follow `{installed_path}/steps/step-03-implement.md`
+- Plan-code-review: Read fully and follow `{installed_path}/steps/step-02-plan.md`

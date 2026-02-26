@@ -27,7 +27,6 @@ A specification is "Ready for Development" when:
 - **Logical**: Tasks ordered by dependency.
 - **Testable**: All ACs use Given/When/Then.
 - **Complete**: No placeholders or TBDs.
-- **Self-Contained**: A fresh agent can implement from the spec alone.
 
 ---
 

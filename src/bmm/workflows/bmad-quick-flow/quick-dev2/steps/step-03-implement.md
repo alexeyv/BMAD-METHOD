@@ -19,10 +19,10 @@ description: 'Branch, shard tasks, execute, commit. Local only.'
 
 One-shot or no sub-agents/tasks available: implement the intent.
 
-Otherwise: hand the spec to a sub-agent/task and let it implement.
+Otherwise: hand the `{wipFile}` to a sub-agent/task and let it implement.
 
 ---
 
 ## NEXT
 
-`{installed_path}/steps/step-04-review.md`
+Read fully and follow `{installed_path}/steps/step-04-review.md`
