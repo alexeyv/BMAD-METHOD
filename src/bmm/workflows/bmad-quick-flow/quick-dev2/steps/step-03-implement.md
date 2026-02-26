@@ -5,8 +5,6 @@ description: 'Execute implementation directly or via sub-agent. Local only.'
 
 # Step 3: Implement
 
-**Step 3 of 5 — Autonomous. Local only.**
-
 ## RULES
 
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
@@ -16,6 +14,15 @@ description: 'Execute implementation directly or via sub-agent. Local only.'
 ---
 
 ## INSTRUCTIONS
+
+### Baseline Snapshot (plan-code-review only)
+
+Before making any changes, capture the baseline into `{spec_file}` frontmatter:
+
+- `baseline_commit` = output of `git rev-parse HEAD`, or `NO_GIT` if not in a git repo.
+- `baseline_untracked` = output of `git ls-files --others --exclude-standard`, or empty if `NO_GIT`.
+
+### Implement
 
 `execution_mode = "one-shot"` or no sub-agents/tasks available: implement the intent.
 

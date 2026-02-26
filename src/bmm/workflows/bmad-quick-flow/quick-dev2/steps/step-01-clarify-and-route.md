@@ -9,8 +9,6 @@ spec_file: '' # set at runtime before leaving this step
 
 # Step 1: Clarify and Route
 
-**Step 1 of 5**
-
 ## RULES
 
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
