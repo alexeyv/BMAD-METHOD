@@ -9,9 +9,9 @@ description: 'Branch, shard tasks, execute, commit. Local only.'
 
 ## RULES
 
+- YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
 - No push. No remote ops.
 - Sequential execution only.
-- YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
 
 ---
 
