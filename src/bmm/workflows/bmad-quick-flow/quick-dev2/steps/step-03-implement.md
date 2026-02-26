@@ -17,8 +17,9 @@ description: 'Branch, shard tasks, execute, commit. Local only.'
 
 ## INSTRUCTIONS
 
-Implement the spec.
-One-shot: implement the intent.
+One-shot or no sub-agents/tasks available: implement the intent.
+
+Otherwise: hand the spec to a sub-agent/task and let it implement.
 
 ---
 

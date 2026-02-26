@@ -32,8 +32,8 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
    - On **S**: Append deferred goals to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
    - On **K**: Proceed as-is.
 3. Route:
-   - **One-shot** — trivial (~3 files). `{execution_mode}` = "one-shot". → Step 3.
-   - **Plan-code-review** — normal. → Step 2.
+   - **One-shot** — trivial (~3 files). `execution_mode = "one-shot"`. → Step 3.
+   - **Plan-code-review** — normal. `execution_mode = "plan-code-review"`. → Step 2.
    - Ambiguous? Default to plan-code-review.
 
 ---
