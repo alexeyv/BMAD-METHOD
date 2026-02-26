@@ -14,14 +14,14 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 ## RULES
 
-- No intermediate approvals.
 - YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
+- No intermediate approvals.
 
 ---
 
 ## INSTRUCTIONS
 
-1. Investigate codebase.
+1. Investigate codebase. _Isolate deep exploration in sub-agents/tasks where available. Return distilled summaries only to prevent context snowballing._
 2. Generate spec from `{templateFile}` into `{wipFile}`.
 3. Self-review against READY FOR DEVELOPMENT standard.
 4. If intent gaps exist, do not fantasize, do not leave open questions, ask the human.
