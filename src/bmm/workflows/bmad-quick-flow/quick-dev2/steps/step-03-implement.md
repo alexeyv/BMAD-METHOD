@@ -1,6 +1,6 @@
 ---
 name: 'step-03-implement'
-description: 'Branch, shard tasks, execute, commit. Local only.'
+description: 'Execute implementation directly or via sub-agent. Local only.'
 ---
 
 # Step 3: Implement
@@ -17,9 +17,9 @@ description: 'Branch, shard tasks, execute, commit. Local only.'
 
 ## INSTRUCTIONS
 
-One-shot or no sub-agents/tasks available: implement the intent.
+`execution_mode = "one-shot"` or no sub-agents/tasks available: implement the intent.
 
-Otherwise: hand `{spec_file}` to a sub-agent/task and let it implement.
+Otherwise (`execution_mode = "plan-code-review"`): hand `{spec_file}` to a sub-agent/task and let it implement.
 
 ---
 
