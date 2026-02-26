@@ -9,7 +9,8 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 
 <!-- Target: 900–1300 tokens. Above 1600 = high risk of context rot.
      Never over-specify "how" — use boundaries + examples instead.
-     Cohesive cross-layer stories (DB+BE+UI) stay in ONE file. -->
+     Cohesive cross-layer stories (DB+BE+UI) stay in ONE file.
+     IMPORTANT: Remove all HTML comments when filling this template. -->
 
 # {title}
 
@@ -52,6 +53,7 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 
 <!-- Tasks: backtick-quoted file path -- action -- rationale. Prefer one task per file; group tightly-coupled changes when splitting would be artificial. -->
 <!-- If an I/O Matrix is present, include a task to unit-test its edge cases. -->
+<!-- AC covers system-level behaviors not captured by the I/O Matrix. Do not duplicate I/O scenarios here. -->
 
 **Execution:**
 - [ ] `FILE` -- ACTION -- RATIONALE
@@ -68,6 +70,7 @@ DESIGN_RATIONALE_AND_EXAMPLES
 
 ## Verification
 
+<!-- If no build, test, or lint commands apply, DELETE THIS ENTIRE SECTION. Do not write "N/A" or "None". -->
 <!-- How the agent confirms its own work. Prefer CLI commands. When no CLI check applies, state what to inspect manually. -->
 
 **Commands:**
