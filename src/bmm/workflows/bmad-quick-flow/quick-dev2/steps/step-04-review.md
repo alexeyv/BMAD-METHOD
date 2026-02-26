@@ -21,15 +21,20 @@ specLoopCap: 5
 ## INSTRUCTIONS
 
 1. Review in context-free subagents: intent audit (skip for one-shot) + adversarial code review via `{adversarial_review_task}`.
-2. deduplicate and classify their findings as one of (in cascading order): 
-- intent_gap - finding caused by the change and wouldn't happen if intent was clear,
-- bad_spec - all other findings caused by the change, including direct deviations from spec; the spec had to be clear enough to prevent that 
-- patch - all other findings that are real and can be trivially fixed
-- defer - all other findings that are real or uncertain
-- reject - all other findings that are noise
-3. have intent_gap findings? Do not fantasize, ask the user.
-4. have bad_spec findings? See if any of them still stand after intent_gap findings are resolved. If yes, discard lower level findings, amend spec, re-implement, re-review. Max `{specLoopCap}` iterations.
-4. Auto-fix patches. Append deferred findings to `{deferred_work_file}`. Forget about rejected findings. Commit.
+2. Deduplicate findings across both reviews.
+3. Classify each finding. The first three categories are **this story's problem** — caused or exposed by the current change. The last two are **not this story's problem**. When in doubt between bad_spec and patch, prefer bad_spec — a spec-level fix produces coherent code, a code-level patch produces a patchwork quilt.
+   - **intent_gap** — caused by the change; wouldn't happen if intent was clear. Intent is expensive to patch — loop back to the human.
+   - **bad_spec** — caused by the change, including direct deviations from spec. The spec should have been clear enough to prevent it. When torn between bad_spec and patch, prefer bad_spec.
+   - **patch** — caused by the change; trivially fixable without human input. Just part of the diff.
+   - **defer** — pre-existing issue not caused by this story, surfaced incidentally by the review. Collect for later focused attention.
+   - **reject** — noise. Drop silently. Accept occasional false negatives to keep the deferred work file from bloating.
+4. Process findings in cascading order. Each loopback discards all findings and restarts the pipeline. Max `{specLoopCap}` iterations across all loopbacks. If the cap is reached and loopback-worthy findings remain, HALT and escalate to the human.
+   - **intent_gap** — Do not fantasize, ask the user. Discard all findings. Loop back: re-clarify intent, amend spec, re-run step 3 and step 4 from scratch.
+   - **bad_spec** — Discard all findings. Amend spec, re-run step 3 and step 4 from scratch.
+   - **patch** — Auto-fix. These are the only findings that survive loopbacks.
+   - **defer** — Append to `{deferred_work_file}`.
+   - **reject** — Drop silently.
+5. Commit.
 
 ---
 
