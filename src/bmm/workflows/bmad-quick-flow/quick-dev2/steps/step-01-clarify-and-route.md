@@ -23,17 +23,18 @@ spec_file: '' # set at runtime before leaving this step
 
 ## INSTRUCTIONS
 
-1. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
-2. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
+1. Load planning context. List files in `{planning_artifacts}` and read the ones relevant to the initial intent. If during clarification you realize you need a doc you skipped, read it then.
+2. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
+3. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
    - Present detected distinct goals as a bullet list.
    - HALT and ask human: `[S] Split — pick first goal, defer the rest` | `[K] Keep as-is`
    - On **S**: Append deferred goals to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
    - On **K**: Proceed as-is.
-3. Generate `spec_file` path:
+4. Generate `spec_file` path:
    - Derive a valid kebab-case slug from the clarified intent.
    - If `{implementation_artifacts}/tech-spec-{slug}.md` already exists, append `-2`, `-3`, etc.
    - Set `spec_file` = `{implementation_artifacts}/tech-spec-{slug}.md`.
-4. Route:
+5. Route:
    - **One-shot** — trivial (~3 files). `execution_mode = "one-shot"`. → Step 3.
    - **Plan-code-review** — normal. `execution_mode = "plan-code-review"`. → Step 2.
    - Ambiguous? Default to plan-code-review.

@@ -4,7 +4,7 @@ description: 'Adversarial review, classify findings, optional spec loop'
 
 adversarial_review_task: '{project-root}/_bmad/core/tasks/review-adversarial-general.xml'
 deferred_work_file: '{implementation_artifacts}/deferred-work.md'
-specLoopCap: 5
+specLoopIteration: 1
 ---
 
 # Step 4: Review
@@ -25,21 +25,19 @@ If `{baseline_commit}` is a git commit hash:
 - `{diff_output}` = `git diff {baseline_commit}` for tracked files.
 - Run `git ls-files --others --exclude-standard` and compare against `{baseline_untracked}`. Any files not in the baseline list are new — include their full content in `{diff_output}`.
 
-If `{baseline_commit}` is `NO_GIT`:
-
-- List all files modified or created during steps 2–3.
-- For each file, show before/after changes or current state.
+If a proper diff cannot be constructed, use best effort to determine what changed.
 
 Do NOT `git add` anything — this is read-only inspection.
 
 ### Review
 
-**One-shot:** Skip diff construction and intent audit. Still invoke `{adversarial_review_task}` in a context-free subagent with the changed files — inline review invites anchoring bias.
+**One-shot:** Skip diff construction. Still invoke `{adversarial_review_task}` in a subagent with the changed files — inline review invites anchoring bias.
 
-**Plan-code-review:** Launch two context-free subagents. Neither receives the spec, the intent, or any conversation context.
+**Plan-code-review:** Launch three subagents without conversation context.
 
-- **Adversarial code review** — receives `{diff_output}` only. Invoke via `{adversarial_review_task}`.
-- **Intent audit** — receives read access to the project. No diff, no spec. Looks for broken edge cases wherever it pleases in the areas touched by this story.
+- **Blind hunter** — receives `{diff_output}` only. No spec, no context docs, no project access. Invoke via `{adversarial_review_task}`.
+- **Edge case hunter** — receives `{diff_output}` and read access to the project. Traces through the logic paths in the changed code and finds edge cases that are not addressed.
+- **Acceptance auditor** — receives `{diff_output}`, `{spec_file}`, and read access to the project. Must also read the docs listed in `{spec_file}` frontmatter `context`. Checks for violations of acceptance criteria, rules, and principles from the spec and context docs.
 
 ### Classify
 
@@ -49,10 +47,10 @@ Do NOT `git add` anything — this is read-only inspection.
    - **bad_spec** — caused by the change, including direct deviations from spec. The spec should have been clear enough to prevent it. When torn between bad_spec and patch, prefer bad_spec.
    - **patch** — caused by the change; trivially fixable without human input. Just part of the diff.
    - **defer** — pre-existing issue not caused by this story, surfaced incidentally by the review. Collect for later focused attention.
-   - **reject** — noise. Drop silently. Accept occasional false negatives to keep the deferred work file from bloating.
-3. Process findings in cascading order. Each loopback discards all findings and restarts the pipeline. Max `{specLoopCap}` iterations across all loopbacks. If the cap is reached and loopback-worthy findings remain, HALT and escalate to the human.
-   - **intent_gap** — Do not fantasize, ask the user. Discard all findings. Loop back: re-clarify intent, amend spec, re-run step 3 and step 4 from scratch.
-   - **bad_spec** — Discard all findings. Amend spec, re-run step 3 and step 4 from scratch.
+   - **reject** — noise. Drop silently. When unsure between defer and reject, prefer reject — only defer findings you are confident are real.
+3. Process findings in cascading order. If intent_gap or bad_spec findings exist, they trigger a loopback — code and spec are discarded anyway, so lower findings are moot. If neither exists, process patch and defer normally. Increment `{specLoopIteration}` on each loopback. If it exceeds 5, HALT and escalate to the human.
+   - **intent_gap** — Revert code changes, discard the spec. Loop back to step 1, then re-run steps 2–4.
+   - **bad_spec** — Revert code changes, discard the spec. Loop back to step 2, then re-run steps 3–4.
    - **patch** — Auto-fix. These are the only findings that survive loopbacks.
    - **defer** — Append to `{deferred_work_file}`.
    - **reject** — Drop silently.
