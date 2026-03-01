@@ -1,12 +1,13 @@
-<!-- if possible, run this in a separate subagent or process with read access to the project,
-  but no context except the content to review -->
+<!-- if possible, run this in a separate subagent or process with read access to the project.
+  The orchestrator provides the diff AND the full post-change content of each changed file
+  so the hunter can resolve symbol definitions without exploring the broader codebase. -->
 
 <task id="_bmad/core/tasks/review-edge-case-hunter.xml" name="Edge Case Hunter Review"
   description="Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven.">
   <objective>You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
-When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+When a diff is provided with file context, enumerate boundaries reachable from the changed lines. Use the full file to resolve symbol definitions and invariants (types, constants, initializations). Do NOT flag pre-existing unguarded paths unless the diff alters their reachability. Report only edges introduced or newly exposed by the change.
 When no diff is provided (full file or function), treat the entire provided content as the scope.
-Ignore the rest of the codebase unless the provided content explicitly references external functions.</objective>
+Do NOT read or reason about files beyond what the orchestrator provides — no codebase exploration.</objective>
 
   <inputs>
     <input name="content" desc="Content to review - diff, full file, or function" />
@@ -48,6 +49,7 @@ No extra text, no explanations, no markdown wrapping.</output-format>
       <action>If also_consider input was provided, incorporate those areas into the analysis</action>
       <action>Enumerate all branching paths and boundary conditions within scope: conditionals, switches, early returns, guard clauses, loops, error handlers, null/empty states, overflow, type edges, concurrency, timing</action>
       <action>For each path: determine whether the content handles it</action>
+      <action>For each candidate: check whether the full file context establishes an invariant (constant value, type constraint, guaranteed initialization) that makes the path unreachable. Discard if so.</action>
       <action>Collect only the unhandled paths as findings - discard handled ones silently</action>
     </step>
 
