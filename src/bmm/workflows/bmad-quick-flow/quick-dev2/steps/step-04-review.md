@@ -16,6 +16,8 @@ specLoopIteration: 1
 
 ## INSTRUCTIONS
 
+Change `{spec_file}` status to `in-review` in the frontmatter before continuing.
+
 ### Construct Diff (plan-code-review only)
 
 Read `{baseline_commit}` and `{baseline_untracked}` from `{spec_file}` frontmatter.
