@@ -39,7 +39,7 @@ Do NOT `git add` anything — this is read-only inspection.
 **Plan-code-review:** Launch three subagents without conversation context. If no sub-agents are available, implement directly. 
 
 - **Blind hunter** — receives `{diff_output}` only. No spec, no context docs, no project access. Invoke via `{adversarial_review_task}`.
-- **Edge case hunter** — receives `{diff_output}` and read access to the project. Traces through the logic paths in the changed code and finds edge cases that are not addressed.
+- **Edge case hunter** — receives `{diff_output}` and read access to the project. Invoke via `{edge_case_hunter_task}`.
 - **Acceptance auditor** — receives `{diff_output}`, `{spec_file}`, and read access to the project. Must also read the docs listed in `{spec_file}` frontmatter `context`. Checks for violations of acceptance criteria, rules, and principles from the spec and context docs.
 
 ### Classify
