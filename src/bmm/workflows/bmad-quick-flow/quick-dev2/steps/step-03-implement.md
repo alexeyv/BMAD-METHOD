@@ -14,12 +14,9 @@ description: 'Execute implementation directly or via sub-agent. Local only.'
 
 ## INSTRUCTIONS
 
-### Baseline Snapshot (plan-code-review only)
+### Baseline (plan-code-review only)
 
-Before making any changes, capture the baseline into `{spec_file}` frontmatter:
-
-- `baseline_commit` = output of `git rev-parse HEAD`, or `NO_GIT` if not in a git repo.
-- `baseline_untracked` = output of `git ls-files --others --exclude-standard`, or empty if `NO_GIT`.
+Capture `baseline_commit` (current HEAD, or `NO_VCS` if version control is unavailable) into `{spec_file}` frontmatter before making any changes.
 
 ### Implement
 

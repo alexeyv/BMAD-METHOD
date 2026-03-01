@@ -21,14 +21,7 @@ Change `{spec_file}` status to `in-review` in the frontmatter before continuing.
 
 ### Construct Diff (plan-code-review only)
 
-Read `{baseline_commit}` and `{baseline_untracked}` from `{spec_file}` frontmatter.
-
-If `{baseline_commit}` is a git commit hash:
-
-- `{diff_output}` = `git diff {baseline_commit}` for tracked files.
-- Run `git ls-files --others --exclude-standard` and compare against `{baseline_untracked}`. Any files not in the baseline list are new — include their full content in `{diff_output}`.
-
-If a proper diff cannot be constructed, use best effort to determine what changed.
+Read `{baseline_commit}` from `{spec_file}` frontmatter. Construct `{diff_output}` covering all changes — tracked and untracked — since `{baseline_commit}`. If a proper diff cannot be constructed, use best effort to determine what changed.
 
 Do NOT `git add` anything — this is read-only inspection.
 

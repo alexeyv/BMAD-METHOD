@@ -29,16 +29,17 @@ spec_file: '' # set at runtime before leaving this step
    - List files in `{planning_artifacts}` and `{implementation_artifacts}`.
    - If you find an unformatted spec or intent file, ingest its contents to form your understanding of the intent.
 2. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
-3. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
+3. Version control sanity check. Is the working tree clean? Does the current branch make sense for this intent — considering its name and recent history? If the tree is dirty or the branch is an obvious mismatch, HALT and ask the human before proceeding. If version control is unavailable, skip this check.
+4. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
    - Present detected distinct goals as a bullet list.
    - HALT and ask human: `[S] Split — pick first goal, defer the rest` | `[K] Keep as-is`
    - On **S**: Append deferred goals to `{deferred_work_file}`. Narrow scope to the first-mentioned goal. Continue routing.
    - On **K**: Proceed as-is.
-4. Generate `spec_file` path:
+5. Generate `spec_file` path:
    - Derive a valid kebab-case slug from the clarified intent.
    - If `{implementation_artifacts}/tech-spec-{slug}.md` already exists, append `-2`, `-3`, etc.
    - Set `spec_file` = `{implementation_artifacts}/tech-spec-{slug}.md`.
-5. Route:
+6. Route:
    - **One-shot** — trivial (~3 files). `execution_mode = "one-shot"`. → Step 3.
    - **Plan-code-review** — normal. `execution_mode = "plan-code-review"`. → Step 2.
    - Ambiguous? Default to plan-code-review.
