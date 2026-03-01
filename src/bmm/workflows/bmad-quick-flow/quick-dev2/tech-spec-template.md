@@ -64,6 +64,13 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 **Acceptance Criteria:**
 - Given PRECONDITION, when ACTION, then EXPECTED_RESULT
 
+## Spec Change Log
+
+<!-- Append-only. Populated by step-04 during review loops. Do not modify or delete existing entries.
+     Each entry records: what finding triggered the change, what was amended, what known-bad state
+     the amendment avoids, and any KEEP instructions (what worked well and must survive re-derivation).
+     Empty until the first bad_spec loopback. -->
+
 ## Design Notes
 
 <!-- If the approach is straightforward, DELETE THIS ENTIRE SECTION. Do not write "N/A" or "None". -->
