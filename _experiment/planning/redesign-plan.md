@@ -19,9 +19,7 @@ file-based task sharding and everything else. MVP.
 Exactly two for the plan-code-review route:
 
 1. **End of Plan (step-02)** — "Here's the spec. Approve, edit, or redirect to full BMM."
-```markdown
 2. **Final Result (step-06)** — "Review complete. Here is the final state. Approve to finish."
-```
 
 ### Step 1 — Clarify and Route
 Capture the tent and decide whether to onep-shot, split into multiple stories, or plan-code-review. 
