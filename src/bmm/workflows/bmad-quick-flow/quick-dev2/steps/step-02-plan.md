@@ -30,7 +30,7 @@ deferred_work_file: '{implementation_artifacts}/deferred-work.md'
 
 Present summary. If token count exceeded 1600 and user chose [K], include the token count and explain why it may be a problem. HALT and ask human: `[A] Approve` | `[E] Edit`
 
-- **A**: Rename `{wipFile}` to `{spec_file}`, set status `ready-for-dev`, freeze Intent/Boundaries/Design Notes. → Step 3.
+- **A**: Rename `{wipFile}` to `{spec_file}`, set status `ready-for-dev`. Everything inside `<frozen-after-approval>` is now locked — only the human can change it. → Step 3.
 - **E**: Apply changes, then return to CHECKPOINT 1.
 
 

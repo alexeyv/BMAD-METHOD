@@ -13,6 +13,8 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 
 # {title}
 
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
 ## Intent
 
 <!-- What is broken or missing, and why it matters. Then the high-level approach — the "what", not the "how". -->
@@ -32,13 +34,6 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 
 **Never:** NON_GOALS_AND_FORBIDDEN_APPROACHES
 
-## Code Map
-
-<!-- Agent-populated during planning. Annotated paths prevent blind codebase searching. -->
-
-- `FILE` -- ROLE_OR_RELEVANCE
-- `FILE` -- ROLE_OR_RELEVANCE
-
 ## I/O & Edge-Case Matrix
 
 <!-- If no meaningful I/O scenarios exist, DELETE THIS ENTIRE SECTION. Do not write "N/A" or "None". -->
@@ -47,6 +42,15 @@ context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 |----------|--------------|---------------------------|----------------|
 | HAPPY_PATH | INPUT | OUTCOME | N/A |
 | ERROR_CASE | INPUT | OUTCOME | ERROR_HANDLING |
+
+</frozen-after-approval>
+
+## Code Map
+
+<!-- Agent-populated during planning. Annotated paths prevent blind codebase searching. -->
+
+- `FILE` -- ROLE_OR_RELEVANCE
+- `FILE` -- ROLE_OR_RELEVANCE
 
 ## Tasks & Acceptance
 

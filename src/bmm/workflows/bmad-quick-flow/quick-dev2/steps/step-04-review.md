@@ -51,9 +51,9 @@ Do NOT `git add` anything — this is read-only inspection.
    - **patch** — caused by the change; trivially fixable without human input. Just part of the diff.
    - **defer** — pre-existing issue not caused by this story, surfaced incidentally by the review. Collect for later focused attention.
    - **reject** — noise. Drop silently. When unsure between defer and reject, prefer reject — only defer findings you are confident are real.
-3. Process findings in cascading order. If intent_gap or bad_spec findings exist, they trigger a loopback — code and spec are discarded anyway, so lower findings are moot. If neither exists, process patch and defer normally. Increment `{specLoopIteration}` on each loopback. If it exceeds 5, HALT and escalate to the human.
-   - **intent_gap** — Revert code changes, discard the spec. Loop back to step 1, then re-run steps 2–4.
-   - **bad_spec** — Revert code changes, discard the spec. Loop back to step 2, then re-run steps 3–4.
+3. Process findings in cascading order. If intent_gap or bad_spec findings exist, they trigger a loopback — lower findings are moot since code will be re-derived. If neither exists, process patch and defer normally. Increment `{specLoopIteration}` on each loopback. If it exceeds 5, HALT and escalate to the human.
+   - **intent_gap** — Root cause is inside `<frozen-after-approval>`. Revert code changes. Loop back to the human to resolve, then re-run steps 2–4.
+   - **bad_spec** — Root cause is outside `<frozen-after-approval>`. Revert code changes, amend the non-frozen sections where the root cause lives. Re-run steps 3–4.
    - **patch** — Auto-fix. These are the only findings that survive loopbacks.
    - **defer** — Append to `{deferred_work_file}`.
    - **reject** — Drop silently.
