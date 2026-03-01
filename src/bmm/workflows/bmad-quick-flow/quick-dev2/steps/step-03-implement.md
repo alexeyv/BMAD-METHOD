@@ -28,7 +28,6 @@ Change `{spec_file}` status to `in-progress` in the frontmatter before starting 
 
 Otherwise (`execution_mode = "plan-code-review"`): hand `{spec_file}` to a sub-agent/task and let it implement.
 
-
 ## NEXT
 
 Read fully and follow `{installed_path}/steps/step-04-review.md`

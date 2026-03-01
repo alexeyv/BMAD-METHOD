@@ -25,7 +25,9 @@ spec_file: '' # set at runtime before leaving this step
 
 ## INSTRUCTIONS
 
-1. Load context. List files in `{implementation_artifacts}` and read the ones relevant to the initial intent. If you find an unformatted spec or intent file, ingest its contents to form your understanding of the intent. If during clarification you realize you need a doc you skipped, read it then.
+1. Load context.
+   - List files in `{planning_artifacts}` and `{implementation_artifacts}`.
+   - If you find an unformatted spec or intent file, ingest its contents to form your understanding of the intent.
 2. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
 3. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
    - Present detected distinct goals as a bullet list.
