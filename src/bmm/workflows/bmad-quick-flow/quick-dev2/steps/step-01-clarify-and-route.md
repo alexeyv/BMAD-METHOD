@@ -15,15 +15,17 @@ spec_file: '' # set at runtime before leaving this step
 - The prompt that triggered this workflow IS the intent — not a hint.
 - Do NOT assume you start from zero.
 
-## CONTEXT
+## ARTIFACT SCAN
 
-- `ready-for-dev` spec in `{implementation_artifacts}`? → Set `spec_file` to its path, set `execution_mode = "plan-code-review"`, confirm with user, skip to step 3.
 - `{wipFile}` exists? → Offer resume or archive.
-
+- Active specs (`ready-for-dev`, `in-progress`, `in-review`) in `{implementation_artifacts}`? → List them and HALT. Ask user which to resume (or `[N]` for new).
+  - If `ready-for-dev` or `in-progress` selected: Set `spec_file`, set `execution_mode = "plan-code-review"`, skip to step 3.
+  - If `in-review` selected: Set `spec_file`, set `execution_mode = "plan-code-review"`, skip to step 4.
+- Unformatted spec or intent file lacking `status` frontmatter in `{implementation_artifacts}`? → Suggest to the user to treat its contents as the starting intent for this workflow. DO NOT attempt to infer a state and resume it.
 
 ## INSTRUCTIONS
 
-1. Load planning context. List files in `{planning_artifacts}` and read the ones relevant to the initial intent. If during clarification you realize you need a doc you skipped, read it then.
+1. Load context. List files in `{implementation_artifacts}` and read the ones relevant to the initial intent. If you find an unformatted spec or intent file, ingest its contents to form your understanding of the intent. If during clarification you realize you need a doc you skipped, read it then.
 2. Clarify intent. Do not fantasize, do not leave open questions. If you must ask questions, ask them as a numbered list. When the human replies, verify to yourself that every single numbered question was answered. If any were ignored, HALT and re-ask only the missing questions before proceeding. Keep looping until intent is clear enough to implement.
 3. Multi-goal check (see SCOPE STANDARD). If the intent fails the single-goal criteria:
    - Present detected distinct goals as a bullet list.

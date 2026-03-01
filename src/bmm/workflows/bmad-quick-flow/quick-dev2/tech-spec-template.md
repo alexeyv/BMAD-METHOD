@@ -2,7 +2,7 @@
 title: '{title}'
 type: 'feature' # feature | bugfix | refactor | chore
 created: '{date}'
-status: 'draft' # draft | ready | in-progress | done
+status: 'draft' # draft | ready-for-dev | in-progress | in-review | done
 context: [] # optional: max 3 project-wide standards/docs. NO source code files.
 ---
 

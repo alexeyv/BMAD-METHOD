@@ -12,6 +12,7 @@ description: 'Present findings, get approval, create PR'
 
 ## INSTRUCTIONS
 
-Display summary of your work to the user. Advise on how to review the changes. Offer to make a plan for manual testing, or to push and/or create a pull request.
+1. Change `{spec_file}` status to `done` in the frontmatter.
+2. Display summary of your work to the user. Advise on how to review the changes. Offer to make a plan for manual testing, or to push and/or create a pull request.
 
 Workflow complete.
