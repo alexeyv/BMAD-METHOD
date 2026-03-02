@@ -12,6 +12,10 @@ description: 'Execute implementation directly or via sub-agent. Local only.'
 - Sequential execution only.
 - Content inside `<frozen-after-approval>` in `{spec_file}` is read-only. Do not modify.
 
+## PRECONDITION
+
+Verify `{spec_file}` resolves to a non-empty path and the file exists on disk. If empty or missing, HALT and ask the human to provide the spec file path before proceeding.
+
 ## INSTRUCTIONS
 
 ### Baseline (plan-code-review only)

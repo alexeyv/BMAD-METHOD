@@ -21,7 +21,7 @@ Change `{spec_file}` status to `in-review` in the frontmatter before continuing.
 
 ### Construct Diff (plan-code-review only)
 
-Read `{baseline_commit}` from `{spec_file}` frontmatter. Construct `{diff_output}` covering all changes — tracked and untracked — since `{baseline_commit}`. If a proper diff cannot be constructed, use best effort to determine what changed.
+Read `{baseline_commit}` from `{spec_file}` frontmatter. If `{baseline_commit}` is missing or `NO_VCS`, use best effort to determine what changed. Otherwise, construct `{diff_output}` covering all changes — tracked and untracked — since `{baseline_commit}`.
 
 Do NOT `git add` anything — this is read-only inspection.
 
@@ -46,7 +46,7 @@ Do NOT `git add` anything — this is read-only inspection.
    - **reject** — noise. Drop silently. When unsure between defer and reject, prefer reject — only defer findings you are confident are real.
 3. Process findings in cascading order. If intent_gap or bad_spec findings exist, they trigger a loopback — lower findings are moot since code will be re-derived. If neither exists, process patch and defer normally. Increment `{specLoopIteration}` on each loopback. If it exceeds 5, HALT and escalate to the human. On any loopback, re-evaluate routing — if scope has grown beyond one-shot, escalate `execution_mode` to plan-code-review.
    - **intent_gap** — Root cause is inside `<frozen-after-approval>`. Revert code changes. Loop back to the human to resolve, then re-run steps 2–4.
-   - **bad_spec** — Root cause is outside `<frozen-after-approval>`. Before reverting code: extract KEEP instructions for positive preservation (what worked well and must survive re-derivation). Revert code changes. Read the `## Spec Change Log` in `{spec_file}` and strictly respect all logged constraints when amending the non-frozen sections that contain the root cause. Append a new change-log entry recording: the triggering finding, what was amended, the known-bad state avoided, and the KEEP instructions. Re-run steps 3–4.
+   - **bad_spec** — Root cause is outside `<frozen-after-approval>`. Before reverting code: extract KEEP instructions for positive preservation (what worked well and must survive re-derivation). Revert code changes. Read the `## Spec Change Log` in `{spec_file}` and strictly respect all logged constraints when amending the non-frozen sections that contain the root cause. Append a new change-log entry recording: the triggering finding, what was amended, the known-bad state avoided, and the KEEP instructions. Read fully and follow `{installed_path}/steps/step-03-implement.md` to re-derive the code, then this step will run again.
    - **patch** — Auto-fix. These are the only findings that survive loopbacks.
    - **defer** — Append to `{deferred_work_file}`.
    - **reject** — Drop silently.
