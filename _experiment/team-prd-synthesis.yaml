@@ -1,0 +1,49 @@
+# DESIGN SPEC — not executable config
+# Claude Code teams are created imperatively via TeamCreate tool,
+# not declaratively via YAML. This file documents the intended architecture.
+
+team: prd-synthesis
+version: 0.1-experiment
+
+# Phase 0: Pyramid Preprocessor (runs before team launch)
+# One Haiku agent per upstream artifact, embarrassingly parallel.
+# Converts raw docs → pyramid-structured docs with frontmatter.
+preprocessor:
+  model: haiku  # Agent tool param: model="haiku"
+  per_artifact: true
+  input: "upstream/*.md"
+  output: "upstream/*-pyramid.md"
+  # Spawned via: Agent(subagent_type="general-purpose", model="haiku", prompt=...)
+
+# Phase 1-2: Artifact Owner Teammates
+# Each owns one pyramid, answers queries, cites [section-id].
+# Spawned via: Agent(subagent_type="general-purpose", team_name="prd-synthesis",
+#              name="<name>", model="haiku", prompt=<teammate-prompt.md>)
+teammates:
+  - name: comp-analysis
+    model: haiku
+    artifact: upstream/comp-analysis-pyramid.md
+  - name: user-research
+    model: haiku
+    artifact: upstream/user-research-pyramid.md
+  - name: market-sizing
+    model: haiku
+    artifact: upstream/market-sizing-pyramid.md
+  - name: domain-research
+    model: haiku
+    artifact: upstream/domain-research-pyramid.md
+  # add one entry per upstream artifact
+  # promote to model: sonnet for high-stakes artifacts if needed
+
+# Phase 3: Lead Synthesizer
+# Queries teammates, builds PRD, logs tensions.
+# Spawned via: Agent(subagent_type="general-purpose", team_name="prd-synthesis",
+#              name="Synthesizer", model="sonnet", prompt=<synthesizer-prompt.md>)
+lead:
+  name: Synthesizer
+  model: sonnet
+  protocol:
+    - QUERY teammate for evidence
+    - LOG_TENSION when cross-artifact contradictions found
+    - DRAFT_SECTION with citations
+    - SELF_REVIEW before completion
